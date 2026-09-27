@@ -46,106 +46,119 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
+
+        /* Mobile UX refinements */
+        .tap-target { min-width: 44px; min-height: 44px; }
+        .safe-bottom { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); }
+        .safe-sheet { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+        .mobile-sheet-panel { max-height: min(78vh, 620px); }
+        .no-scrollbar { scrollbar-width: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        @media (max-width: 767px) {
+            #toast {
+                left: 1rem;
+                right: 1rem;
+                width: auto;
+                top: 4.75rem;
+            }
+            .mobile-kpi-card { min-width: 0; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full font-sans antialiased flex flex-col transition-colors duration-200">
 
     <header class="sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 glass">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between md:h-16 py-2 md:py-0 gap-2">
-                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
-                        <i class="fa-solid fa-wallet text-xl"></i>
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-2">
+                <!-- Brand -->
+                <div class="flex items-center gap-2.5 cursor-pointer min-w-0 shrink" onclick="switchTab('dashboard')">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-wallet text-lg sm:text-xl"></i>
                     </div>
-                    <div>
-                        <span class="font-bold text-lg leading-tight block">PaySmart</span>
-                        <span class="text-xs text-slate-500 dark:text-slate-400">Payday Cycle Financial Planner</span>
+                    <div class="min-w-0">
+                        <span class="font-bold text-base sm:text-lg leading-tight block truncate">PaySmart</span>
+                        <span class="hidden sm:block text-xs text-slate-500 dark:text-slate-400 truncate">Payday Cycle Financial Planner</span>
                     </div>
                 </div>
 
-                <!-- Desktop Navigation Buttons -->
-                <nav class="hidden md:flex space-x-1">
-                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-400">
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex space-x-1 mx-auto">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-400">
                         <i class="fa-solid fa-chart-pie"></i> Overview
                     </button>
-                    <button onclick="switchTab('log')" id="nav-log" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+                    <button onclick="switchTab('log')" id="nav-log" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
                         <i class="fa-solid fa-plus-circle"></i> Log Entry
                     </button>
-                    <button onclick="switchTab('recurring')" id="nav-recurring" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
-                        <i class="fa-solid fa-rotate text-emerald-500"></i> Recurring
+                    <button onclick="switchTab('recurring')" id="nav-recurring" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-rotate"></i> Recurring
                     </button>
-                    <button onclick="switchTab('history')" id="nav-history" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
-                        <i class="fa-solid fa-list-check"></i> Expenses Log
+                    <button onclick="switchTab('history')" id="nav-history" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-list-check"></i> Expenses
                     </button>
-                    <button onclick="switchTab('pockets')" id="nav-pockets" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
-                        <i class="fa-solid fa-piggy-bank"></i> Savings Pockets
+                    <button onclick="switchTab('pockets')" id="nav-pockets" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-piggy-bank"></i> Savings
                     </button>
-                    <button onclick="switchTab('import')" id="nav-import" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
-                        <i class="fa-solid fa-file-invoice"></i> CSV Import
+                    <button onclick="switchTab('import')" id="nav-import" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice"></i> Import
                     </button>
                 </nav>
 
-                <div class="grid grid-cols-3 gap-1.5 w-full md:w-auto md:flex md:items-center md:gap-2">
-                    <!-- GitHub Sync Badge & Controls -->
-                    <div id="sync-badge" class="min-h-[40px] px-2 py-1 rounded-lg md:rounded-full text-[10px] md:text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700">
+                <!-- Sync and Utilities -->
+                <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    <div id="sync-badge" title="GitHub sync status" class="h-9 sm:h-10 max-w-[82px] sm:max-w-[120px] px-2 sm:px-2.5 rounded-full text-[10px] sm:text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700">
                         <span id="sync-indicator" class="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
                         <span id="sync-status-text" class="truncate">Local</span>
                     </div>
 
-                    <button onclick="manualSync()" title="Sync with GitHub" class="min-h-[40px] px-2 md:p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-semibold">
-                        <i class="fa-brands fa-github text-slate-700 dark:text-slate-200 text-sm"></i>
-                        <span class="md:hidden">Sync</span>
-                        <span class="hidden md:inline">Sync GitHub</span>
+                    <button onclick="manualSync()" title="Sync with GitHub" aria-label="Sync with GitHub" class="tap-target md:min-w-0 md:min-h-0 md:h-10 px-2.5 md:px-3 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-all flex items-center justify-center gap-2 text-xs font-semibold">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span class="hidden xl:inline">Sync GitHub</span>
                     </button>
 
-                    <button onclick="openGitHubSettings()" title="GitHub sync settings" class="min-h-[40px] px-2 md:p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-1.5 text-[10px] md:text-xs font-semibold">
-                        <i class="fa-solid fa-gear"></i>
-                        <span class="md:hidden">Settings</span>
-                    </button>
+                    <div class="hidden md:flex items-center gap-1.5">
+                        <button onclick="openGitHubSettings()" title="GitHub sync settings" aria-label="GitHub settings" class="h-10 w-10 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center justify-center">
+                            <i class="fa-solid fa-gear"></i>
+                        </button>
+                        <button onclick="exportJSON()" title="Export State to JSON" aria-label="Export JSON" class="h-10 w-10 rounded-xl border border-slate-200 dark:border-slate-800 text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center justify-center">
+                            <i class="fa-solid fa-file-code"></i>
+                        </button>
+                        <button onclick="toggleDarkMode()" title="Toggle Light/Dark Theme" aria-label="Toggle theme" class="h-10 w-10 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center justify-center">
+                            <i id="theme-icon" class="fa-solid fa-moon"></i>
+                        </button>
+                        <button onclick="resetData()" title="Reset Sample Data" aria-label="Reset data" class="h-10 w-10 rounded-xl border border-red-200 dark:border-red-900/40 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all flex items-center justify-center">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                    </div>
 
-                    <!-- Export JSON Button -->
-                    <button onclick="exportJSON()" title="Export State to JSON" class="min-h-[40px] px-2 md:p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-semibold">
-                        <i class="fa-solid fa-file-code text-blue-500 text-sm"></i>
-                        <span class="md:hidden">Export</span>
-                        <span class="hidden md:inline">Export JSON</span>
-                    </button>
-
-                    <button onclick="toggleDarkMode()" class="min-h-[40px] px-2 md:p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-1.5 text-[10px] md:text-xs font-semibold" title="Toggle Light/Dark Theme">
-                        <i id="theme-icon" class="fa-solid fa-moon"></i>
-                        <span class="md:hidden">Theme</span>
-                    </button>
-                    <button onclick="resetData()" title="Reset Sample Data" class="min-h-[40px] px-2 md:p-2.5 rounded-lg border border-red-200 dark:border-red-900/40 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all flex items-center justify-center gap-1.5 text-[10px] md:text-xs font-semibold">
-                        <i class="fa-solid fa-rotate-left"></i>
-                        <span class="md:hidden">Reset</span>
+                    <button onclick="openMobileTools()" title="More options" aria-label="More options" class="md:hidden tap-target rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Mobile Bottom Navigation Bar -->
-        <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 py-2 px-2 flex justify-around">
-            <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                <i class="fa-solid fa-chart-pie text-base"></i> Overview
+        <!-- Mobile Bottom Navigation -->
+        <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 px-2 pt-1.5 safe-bottom grid grid-cols-5 shadow-[0_-8px_30px_rgba(15,23,42,0.08)]">
+            <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="mobile-nav-btn min-h-[52px] rounded-xl flex flex-col items-center justify-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/30">
+                <i class="fa-solid fa-chart-pie text-base"></i><span>Overview</span>
             </button>
-            <button onclick="switchTab('log')" id="mobile-nav-log" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                <i class="fa-solid fa-plus-circle text-base"></i> Log
+            <button onclick="switchTab('history')" id="mobile-nav-history" class="mobile-nav-btn min-h-[52px] rounded-xl flex flex-col items-center justify-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                <i class="fa-solid fa-list-check text-base"></i><span>Expenses</span>
             </button>
-            <button onclick="switchTab('recurring')" id="mobile-nav-recurring" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                <i class="fa-solid fa-rotate text-base"></i> Recurring
+            <button onclick="switchTab('log')" id="mobile-nav-log" class="mobile-nav-btn min-h-[52px] rounded-xl flex flex-col items-center justify-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                <span class="w-8 h-8 -mt-3 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-600/25"><i class="fa-solid fa-plus text-sm"></i></span><span>Log</span>
             </button>
-            <button onclick="switchTab('history')" id="mobile-nav-history" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                <i class="fa-solid fa-list-check text-base"></i> Expenses
+            <button onclick="switchTab('pockets')" id="mobile-nav-pockets" class="mobile-nav-btn min-h-[52px] rounded-xl flex flex-col items-center justify-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                <i class="fa-solid fa-piggy-bank text-base"></i><span>Savings</span>
             </button>
-            <button onclick="switchTab('pockets')" id="mobile-nav-pockets" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                <i class="fa-solid fa-piggy-bank text-base"></i> Savings
-            </button>
-            <button onclick="switchTab('import')" id="mobile-nav-import" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                <i class="fa-solid fa-file-invoice text-base"></i> Import
+            <button onclick="openMobileTools()" id="mobile-nav-more" class="mobile-nav-btn min-h-[52px] rounded-xl flex flex-col items-center justify-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                <i class="fa-solid fa-ellipsis text-base"></i><span>More</span>
             </button>
         </div>
     </header>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-8">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-28 md:pb-8">
 
         <!-- Notification Toast -->
         <div id="toast" class="fixed top-20 right-4 z-50 transform transition-all duration-300 translate-x-full opacity-0 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-xl flex items-center gap-3">
@@ -154,24 +167,24 @@
         </div>
 
         <!-- TAB 1: DASHBOARD OVERVIEW -->
-        <div id="tab-dashboard" class="tab-content space-y-6">
+        <div id="tab-dashboard" class="tab-content space-y-4 sm:space-y-6">
             
             <!-- Payday Rule Alert Card -->
-            <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white rounded-2xl p-6 shadow-xl shadow-emerald-900/10 relative overflow-hidden">
+            <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white rounded-2xl p-4 sm:p-6 shadow-xl shadow-emerald-900/10 relative overflow-hidden">
                 <div class="absolute -right-6 -bottom-6 opacity-10 text-9xl">
                     <i class="fa-solid fa-calendar-check"></i>
                 </div>
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 relative z-10">
                     <div class="space-y-1">
                         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-sm">
                             <i class="fa-solid fa-business-time"></i> Payday Rule Active (Slovenia)
                         </div>
-                        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Next Payday: <span id="payday-date-display" class="underline decoration-teal-300">Loading...</span></h2>
+                        <h2 class="text-xl sm:text-3xl font-extrabold tracking-tight">Next Payday: <span id="payday-date-display" class="underline decoration-teal-300">Loading...</span></h2>
                         <p class="text-xs sm:text-sm text-emerald-100 max-w-xl">
                             Salary schedule: 15th of every month. If the 15th falls on a weekend or Slovenian holiday, payday automatically shifts to the first working day.
                         </p>
                     </div>
-                    <div class="bg-white/10 dark:bg-slate-900/30 backdrop-blur-md border border-white/20 p-4 rounded-xl flex items-center gap-4 min-w-[230px]">
+                    <div class="bg-white/10 dark:bg-slate-900/30 backdrop-blur-md border border-white/20 p-3 sm:p-4 rounded-xl flex items-center gap-3 sm:gap-4 w-full md:w-auto md:min-w-[230px]">
                         <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-2xl font-bold">
                             <i class="fa-solid fa-hourglass-half"></i>
                         </div>
@@ -190,17 +203,17 @@
                     <h1 class="text-2xl font-bold tracking-tight">Financial Overview</h1>
                     <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">Finances calculated strictly between salary paydays.</p>
                 </div>
-                <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-fit">
+                <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full sm:w-fit">
                     <i class="fa-solid fa-calendar-days text-emerald-500 ml-2"></i>
-                    <select id="cycle-selector" onchange="changePayPeriodView(this.value)" class="bg-transparent text-xs sm:text-sm font-bold focus:outline-none pr-2">
+                    <select id="cycle-selector" onchange="changePayPeriodView(this.value)" class="bg-transparent text-xs sm:text-sm font-bold focus:outline-none pr-2 flex-1 min-w-0">
                         <!-- Populated by JS -->
                     </select>
                 </div>
             </div>
 
             <!-- Metric KPI Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                <div class="mobile-kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold uppercase text-slate-400">Cycle Income</span>
                         <div class="flex items-center gap-1.5">
@@ -212,51 +225,51 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold" id="dash-income">€0.00</div>
+                    <div class="text-xl sm:text-2xl font-bold" id="dash-income">€0.00</div>
                     <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Salary received for cycle</div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="mobile-kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold uppercase text-slate-400">Auto Savings</span>
                         <div class="p-2 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-lg">
                             <i class="fa-solid fa-vault"></i>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="dash-savings">€995.00</div>
+                    <div class="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400" id="dash-savings">€995.00</div>
                     <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Personal, Wife, Car, Cats, Tennis</div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="mobile-kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold uppercase text-slate-400">Recurring Bills</span>
                         <div class="p-2 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-lg">
                             <i class="fa-solid fa-rotate"></i>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold text-amber-600 dark:text-amber-400" id="dash-recurring-total">€0.00</div>
+                    <div class="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400" id="dash-recurring-total">€0.00</div>
                     <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Active recurring rules</div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="mobile-kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold uppercase text-slate-400">Disposable Pool</span>
                         <div class="p-2 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-lg">
                             <i class="fa-solid fa-bag-shopping"></i>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="dash-disposable">€0.00</div>
+                    <div class="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400" id="dash-disposable">€0.00</div>
                     <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Income - Savings - Fixed Bills</div>
                 </div>
 
-                <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md border border-slate-800">
+                <div class="mobile-kpi-card col-span-2 lg:col-span-1 bg-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-800">
                     <div class="flex items-center justify-between mb-2 opacity-90">
                         <span class="text-xs font-semibold uppercase text-emerald-400">Weekly Target</span>
                         <div class="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg">
                             <i class="fa-solid fa-calendar-week"></i>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold text-white" id="dash-weekly-budget">€0.00 / wk</div>
+                    <div class="text-xl sm:text-2xl font-bold text-white" id="dash-weekly-budget">€0.00 / wk</div>
                     <div class="text-[11px] text-slate-400 mt-1" id="dash-weekly-rem">Remaining: €0.00</div>
                 </div>
             </div>
@@ -759,6 +772,45 @@
     </div>
 
 
+    <!-- Mobile: More / Tools Bottom Sheet -->
+    <div id="modal-mobile-tools" class="fixed inset-0 z-50 hidden md:hidden">
+        <button type="button" onclick="closeMobileTools()" aria-label="Close more options" class="absolute inset-0 w-full h-full bg-slate-900/50 backdrop-blur-sm"></button>
+        <div class="absolute bottom-0 left-0 right-0 bg-white dark:bg-slate-900 rounded-t-3xl border-t border-slate-200 dark:border-slate-700 shadow-2xl safe-sheet mobile-sheet-panel overflow-y-auto">
+            <div class="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700 mx-auto mt-2.5 mb-2"></div>
+            <div class="px-4 pb-2 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base">More</h3>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Navigation and PaySmart utilities</p>
+                </div>
+                <button onclick="closeMobileTools()" class="tap-target rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="px-4 py-2 grid grid-cols-2 gap-2.5">
+                <button onclick="mobileGo('recurring')" class="min-h-[76px] p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left">
+                    <span class="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-2"><i class="fa-solid fa-rotate"></i></span>
+                    <span class="block text-sm font-bold">Recurring</span><span class="block text-[10px] text-slate-500 mt-0.5">Manage fixed expenses</span>
+                </button>
+                <button onclick="mobileGo('import')" class="min-h-[76px] p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left">
+                    <span class="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-2"><i class="fa-solid fa-file-csv"></i></span>
+                    <span class="block text-sm font-bold">CSV Import</span><span class="block text-[10px] text-slate-500 mt-0.5">Import bank statement</span>
+                </button>
+                <button onclick="closeMobileTools(); openGitHubSettings();" class="min-h-[76px] p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left">
+                    <span class="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center mb-2"><i class="fa-brands fa-github"></i></span>
+                    <span class="block text-sm font-bold">GitHub</span><span class="block text-[10px] text-slate-500 mt-0.5">Sync configuration</span>
+                </button>
+                <button onclick="closeMobileTools(); exportJSON();" class="min-h-[76px] p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left">
+                    <span class="w-9 h-9 rounded-xl bg-cyan-100 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-2"><i class="fa-solid fa-file-code"></i></span>
+                    <span class="block text-sm font-bold">Export JSON</span><span class="block text-[10px] text-slate-500 mt-0.5">Download a backup</span>
+                </button>
+            </div>
+
+            <div class="px-4 pt-2 pb-1 flex gap-2">
+                <button onclick="closeMobileTools(); toggleDarkMode();" class="flex-1 min-h-[48px] rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold"><i class="fa-solid fa-circle-half-stroke mr-2"></i>Theme</button>
+                <button onclick="closeMobileTools(); resetData();" class="flex-1 min-h-[48px] rounded-xl bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-sm font-semibold"><i class="fa-solid fa-rotate-left mr-2"></i>Reset</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: GitHub Sync Settings -->
     <div id="modal-github" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
         <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-xl w-full p-6 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-4">
@@ -1203,21 +1255,42 @@
             if (activeTab) activeTab.classList.remove('hidden');
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.className = "nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2";
+                btn.className = "nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2";
             });
 
             const currentNav = document.getElementById('nav-' + tabId);
             if (currentNav) {
-                currentNav.className = "nav-btn px-3.5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-400";
+                currentNav.className = "nav-btn px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-400";
             }
 
             document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
-                btn.className = "mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400";
+                btn.classList.remove('text-emerald-600', 'dark:text-emerald-400', 'font-semibold', 'bg-emerald-50', 'dark:bg-emerald-950/30');
+                btn.classList.add('text-slate-500', 'dark:text-slate-400');
             });
-            const currentMobileNav = document.getElementById('mobile-nav-' + tabId);
+
+            const mobileTarget = (tabId === 'recurring' || tabId === 'import') ? 'more' : tabId;
+            const currentMobileNav = document.getElementById('mobile-nav-' + mobileTarget);
             if (currentMobileNav) {
-                currentMobileNav.className = "mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold";
+                currentMobileNav.classList.remove('text-slate-500', 'dark:text-slate-400');
+                currentMobileNav.classList.add('text-emerald-600', 'dark:text-emerald-400', 'font-semibold', 'bg-emerald-50', 'dark:bg-emerald-950/30');
             }
+
+            if (window.innerWidth < 768) window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openMobileTools() {
+            const modal = document.getElementById('modal-mobile-tools');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeMobileTools() {
+            const modal = document.getElementById('modal-mobile-tools');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function mobileGo(tabId) {
+            closeMobileTools();
+            switchTab(tabId);
         }
 
         function switchLogSubtab(type) {
@@ -1238,6 +1311,10 @@
                 expBtn.className = "flex-1 pb-3 text-center font-bold text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300";
             }
         }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeMobileTools();
+        });
 
         function toggleDarkMode() {
             document.documentElement.classList.toggle('dark');
