@@ -1,0 +1,2368 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaySmart - Financial Planner & Recurring Expense Tracker</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full font-sans antialiased flex flex-col transition-colors duration-200">
+
+    <header class="sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 glass">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-wallet text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg leading-tight block">PaySmart</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-400">Payday Cycle Financial Planner</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Buttons -->
+                <nav class="hidden md:flex space-x-1">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-400">
+                        <i class="fa-solid fa-chart-pie"></i> Overview
+                    </button>
+                    <button onclick="switchTab('log')" id="nav-log" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle"></i> Log Entry
+                    </button>
+                    <button onclick="switchTab('recurring')" id="nav-recurring" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-rotate text-emerald-500"></i> Recurring
+                    </button>
+                    <button onclick="switchTab('history')" id="nav-history" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-list-check"></i> Expenses Log
+                    </button>
+                    <button onclick="switchTab('pockets')" id="nav-pockets" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-piggy-bank"></i> Savings Pockets
+                    </button>
+                    <button onclick="switchTab('import')" id="nav-import" class="nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice"></i> CSV Import
+                    </button>
+                </nav>
+
+                <div class="flex items-center gap-2">
+                    <!-- GitHub Sync Badge & Controls -->
+                    <div id="sync-badge" class="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 flex items-center gap-1.5 border border-slate-200 dark:border-slate-700">
+                        <span id="sync-indicator" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                        <span id="sync-status-text">Local</span>
+                    </div>
+
+                    <button onclick="manualSync()" title="Sync with GitHub" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2 text-xs font-semibold">
+                        <i class="fa-brands fa-github text-slate-700 dark:text-slate-200 text-sm"></i>
+                        <span class="hidden sm:inline">Sync GitHub</span>
+                    </button>
+
+                    <button onclick="openGitHubSettings()" title="GitHub sync settings" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+
+                    <!-- NEW: Export JSON Button -->
+                    <button onclick="exportJSON()" title="Export State to JSON" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2 text-xs font-semibold">
+                        <i class="fa-solid fa-file-code text-blue-500 text-sm"></i>
+                        <span class="hidden sm:inline">Export JSON</span>
+                    </button>
+
+                    <button onclick="toggleDarkMode()" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" title="Toggle Light/Dark Theme">
+                        <i id="theme-icon" class="fa-solid fa-moon"></i>
+                    </button>
+                    <button onclick="resetData()" title="Reset Sample Data" class="p-2.5 rounded-lg border border-red-200 dark:border-red-900/40 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Bottom Navigation Bar -->
+        <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 py-2 px-2 flex justify-around">
+            <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                <i class="fa-solid fa-chart-pie text-base"></i> Overview
+            </button>
+            <button onclick="switchTab('log')" id="mobile-nav-log" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                <i class="fa-solid fa-plus-circle text-base"></i> Log
+            </button>
+            <button onclick="switchTab('recurring')" id="mobile-nav-recurring" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                <i class="fa-solid fa-rotate text-base"></i> Recurring
+            </button>
+            <button onclick="switchTab('history')" id="mobile-nav-history" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                <i class="fa-solid fa-list-check text-base"></i> Expenses
+            </button>
+            <button onclick="switchTab('pockets')" id="mobile-nav-pockets" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                <i class="fa-solid fa-piggy-bank text-base"></i> Savings
+            </button>
+            <button onclick="switchTab('import')" id="mobile-nav-import" class="mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                <i class="fa-solid fa-file-invoice text-base"></i> Import
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-8">
+
+        <!-- Notification Toast -->
+        <div id="toast" class="fixed top-20 right-4 z-50 transform transition-all duration-300 translate-x-full opacity-0 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-xl flex items-center gap-3">
+            <i id="toast-icon" class="fa-solid fa-check-circle text-emerald-400 dark:text-emerald-600"></i>
+            <span id="toast-message" class="text-sm font-medium">Message</span>
+        </div>
+
+        <!-- TAB 1: DASHBOARD OVERVIEW -->
+        <div id="tab-dashboard" class="tab-content space-y-6">
+            
+            <!-- Payday Rule Alert Card -->
+            <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white rounded-2xl p-6 shadow-xl shadow-emerald-900/10 relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 opacity-10 text-9xl">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                    <div class="space-y-1">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-sm">
+                            <i class="fa-solid fa-business-time"></i> Payday Rule Active (Slovenia)
+                        </div>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Next Payday: <span id="payday-date-display" class="underline decoration-teal-300">Loading...</span></h2>
+                        <p class="text-xs sm:text-sm text-emerald-100 max-w-xl">
+                            Salary schedule: 15th of every month. If the 15th falls on a weekend or Slovenian holiday, payday automatically shifts to the first working day.
+                        </p>
+                    </div>
+                    <div class="bg-white/10 dark:bg-slate-900/30 backdrop-blur-md border border-white/20 p-4 rounded-xl flex items-center gap-4 min-w-[230px]">
+                        <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-2xl font-bold">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs uppercase text-emerald-100 font-semibold block">Countdown</span>
+                            <span id="payday-countdown-days" class="text-2xl font-extrabold block">-- Days</span>
+                            <span id="payday-rule-note" class="text-[10px] text-teal-200">Checking schedule...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cycle Selector Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">Financial Overview</h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">Finances calculated strictly between salary paydays.</p>
+                </div>
+                <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-fit">
+                    <i class="fa-solid fa-calendar-days text-emerald-500 ml-2"></i>
+                    <select id="cycle-selector" onchange="changePayPeriodView(this.value)" class="bg-transparent text-xs sm:text-sm font-bold focus:outline-none pr-2">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Metric KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold uppercase text-slate-400">Cycle Income</span>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="switchTab('log'); switchLogSubtab('income');" class="text-xs text-slate-400 hover:text-emerald-500 transition-colors" title="Manage Incomes">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <div class="p-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-lg">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold" id="dash-income">€0.00</div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Salary received for cycle</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold uppercase text-slate-400">Auto Savings</span>
+                        <div class="p-2 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-lg">
+                            <i class="fa-solid fa-vault"></i>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="dash-savings">€995.00</div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Personal, Wife, Car, Cats, Tennis</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold uppercase text-slate-400">Recurring Bills</span>
+                        <div class="p-2 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-lg">
+                            <i class="fa-solid fa-rotate"></i>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-amber-600 dark:text-amber-400" id="dash-recurring-total">€0.00</div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Active recurring rules</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold uppercase text-slate-400">Disposable Pool</span>
+                        <div class="p-2 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-lg">
+                            <i class="fa-solid fa-bag-shopping"></i>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="dash-disposable">€0.00</div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Income - Savings - Fixed Bills</div>
+                </div>
+
+                <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md border border-slate-800">
+                    <div class="flex items-center justify-between mb-2 opacity-90">
+                        <span class="text-xs font-semibold uppercase text-emerald-400">Weekly Target</span>
+                        <div class="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg">
+                            <i class="fa-solid fa-calendar-week"></i>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-white" id="dash-weekly-budget">€0.00 / wk</div>
+                    <div class="text-[11px] text-slate-400 mt-1" id="dash-weekly-rem">Remaining: €0.00</div>
+                </div>
+            </div>
+
+            <!-- Salary History & Average KPI Card -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700/60 pb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-money-bill-trend-up"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">Salary History & Averages</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">All recorded income entries with calculated cycle averages.</p>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-4 py-2 rounded-xl text-right">
+                        <span class="text-[11px] uppercase font-semibold text-slate-500 dark:text-slate-400 block">Average Income per Cycle</span>
+                        <span id="salary-avg-display" class="text-xl font-black text-emerald-600 dark:text-emerald-400">€0.00</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="text-slate-400 uppercase border-b border-slate-100 dark:border-slate-700">
+                            <tr>
+                                <th class="pb-2 font-semibold">Pay Date</th>
+                                <th class="pb-2 font-semibold">Source / Employer</th>
+                                <th class="pb-2 font-semibold">Cycle Period</th>
+                                <th class="pb-2 font-semibold text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-salaries-table-body" class="divide-y divide-slate-100 dark:divide-slate-700">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Weekly Allowance Progress Card -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h3 class="font-bold text-lg">Active Week Allowance Progress</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Monitor spending speed for the active week in current payday cycle.</p>
+                    </div>
+                    <span id="week-badge" class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-xs font-semibold rounded-full w-fit">Week 1 of 4</span>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm font-medium">
+                        <span>Spent this week: <span id="week-spent-txt" class="font-bold text-slate-900 dark:text-white">€0.00</span></span>
+                        <span>Weekly allowance limit: <span id="week-limit-txt" class="text-slate-500">€0.00</span></span>
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-700 h-3.5 rounded-full overflow-hidden p-0.5">
+                        <div id="week-progress-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-slate-400 pt-1">
+                        <span>0%</span>
+                        <span id="week-status-msg" class="text-emerald-600 dark:text-emerald-400 font-medium">On track</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <h3 class="font-bold text-lg mb-1">Budget Allocation Breakdown</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Savings target vs. fixed recurring vs. variable spent in pay cycle.</p>
+                    <div class="relative h-64 w-full flex items-center justify-center">
+                        <canvas id="allocationChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <h3 class="font-bold text-lg mb-1">Weekly Expense Progression</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Total recorded expenses grouped by 4 weekly blocks of the pay cycle.</p>
+                    <div class="relative h-64 w-full">
+                        <canvas id="weeklyBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pockets & Recurring Summaries -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg">Automated Monthly Savings Target</h3>
+                        <button onclick="switchTab('pockets')" class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">Manage Goals &rarr;</button>
+                    </div>
+                    <div class="space-y-3" id="dash-pockets-list"></div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg">Active Recurring Commitments</h3>
+                        <button onclick="switchTab('recurring')" class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">View Rules &rarr;</button>
+                    </div>
+                    <div class="space-y-3" id="dash-recurring-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: LOG TRANSACTION ENTRY -->
+        <div id="tab-log" class="tab-content hidden space-y-6">
+            <div class="max-w-2xl mx-auto bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
+                
+                <div class="flex border-b border-slate-200 dark:border-slate-700 mb-6">
+                    <button id="subtab-btn-expense" onclick="switchLogSubtab('expense')" class="flex-1 pb-3 text-center font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 dark:text-emerald-400">
+                        <i class="fa-solid fa-receipt mr-1"></i> Record One-time Expense
+                    </button>
+                    <button id="subtab-btn-income" onclick="switchLogSubtab('income')" class="flex-1 pb-3 text-center font-bold text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                        <i class="fa-solid fa-money-bill-wave mr-1"></i> Record Salary / Income
+                    </button>
+                </div>
+
+                <!-- Expense Form -->
+                <form id="expense-form" onsubmit="handleAddExpense(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Expense Amount (€)</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">€</span>
+                            <input type="number" id="exp-amount" step="0.01" min="0.01" required placeholder="0.00" class="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Category</label>
+                            <select id="exp-category" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                <option value="Food & Groceries">Food & Groceries</option>
+                                <option value="Utilities & Bills">Utilities & Bills</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Subscriptions">Subscriptions</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Date</label>
+                            <input type="date" id="exp-date" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Description / Store</label>
+                        <input type="text" id="exp-note" placeholder="e.g. Supermarket Grocery" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+
+                    <button type="submit" class="w-full py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all">
+                        Save Expense Entry
+                    </button>
+                </form>
+
+                <!-- Salary Income Form -->
+                <form id="income-form" onsubmit="handleAddIncome(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Salary Income Amount (€)</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">€</span>
+                            <input type="number" id="income-amount" step="0.01" min="1" required placeholder="2650.00" class="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Date Received</label>
+                            <input type="date" id="income-date" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Source / Employer</label>
+                            <input type="text" id="income-source" placeholder="e.g. Monthly Salary" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/50 space-y-1">
+                        <div class="flex justify-between text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                            <span>Auto Savings Reserve Goal:</span>
+                            <span id="income-rule-preview">- €995.00</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Reserves savings pockets target before calculating weekly allowance.</p>
+                    </div>
+
+                    <button type="submit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all">
+                        Log Income & Recalculate Budget
+                    </button>
+                </form>
+
+                <div id="income-log-container" class="mt-8 border-t border-slate-200 dark:border-slate-700 pt-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200">Logged Income Entries for Active Payday Cycle</h3>
+                        <span class="text-xs text-slate-400" id="income-log-count">0 entries</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="text-slate-400 uppercase border-b border-slate-200 dark:border-slate-700">
+                                <tr>
+                                    <th class="pb-2 font-semibold">Date</th>
+                                    <th class="pb-2 font-semibold">Source</th>
+                                    <th class="pb-2 font-semibold">Amount</th>
+                                    <th class="pb-2 font-semibold text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="income-table-body" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                <!-- JS populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: RECURRING EXPENSES TAB -->
+        <div id="tab-recurring" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold">Recurring Expenses Rules</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Configure recurring subscriptions, housing, utilities with start/end dates or indefinite rules.</p>
+                </div>
+                <button type="button" onclick="showAddRecurringModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-plus text-sm"></i> Add Recurring Expense
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="recurring-grid">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+
+        <!-- TAB 4: EXPENSES HISTORY LOG -->
+        <div id="tab-history" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold">Recorded Expenses Log</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Search, filter, or edit transactions recorded for the selected payday period.</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input type="text" id="search-expenses" oninput="renderExpensesTable()" placeholder="Search description..." class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        
+                        <select id="filter-category" onchange="renderExpensesTable()" class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="ALL">All Categories</option>
+                            <option value="Food & Groceries">Food & Groceries</option>
+                            <option value="Utilities & Bills">Utilities & Bills</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Transport">Transport</option>
+                            <option value="Subscriptions">Subscriptions</option>
+                            <option value="Other">Other</option>
+                        </select>
+
+                        <select id="sort-expenses" onchange="renderExpensesTable()" class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="date-desc">Newest First</option>
+                            <option value="date-asc">Oldest First</option>
+                            <option value="amount-desc">Highest Amount</option>
+                            <option value="amount-asc">Lowest Amount</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="text-xs text-slate-400 uppercase border-b border-slate-200 dark:border-slate-700">
+                            <tr>
+                                <th class="pb-3 font-semibold">Date</th>
+                                <th class="pb-3 font-semibold">Category</th>
+                                <th class="pb-3 font-semibold">Description</th>
+                                <th class="pb-3 font-semibold">Amount</th>
+                                <th class="pb-3 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenses-table-body" class="divide-y divide-slate-100 dark:divide-slate-700">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: SAVINGS POCKETS -->
+        <div id="tab-pockets" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold">Savings Accounts & Pockets</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Total automated monthly target: <strong class="text-emerald-600 dark:text-emerald-400" id="pockets-total-target">€995.00</strong></p>
+                </div>
+                <button onclick="promptAddNewPocket()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition-all">
+                    + Add Custom Pocket
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="pockets-grid">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+
+        <!-- TAB 6: CSV IMPORTER -->
+        <div id="tab-import" class="tab-content hidden space-y-6">
+            <div class="max-w-3xl mx-auto space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+                    <div class="w-16 h-16 bg-blue-50 dark:bg-blue-950/50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                        <i class="fa-solid fa-file-csv"></i>
+                    </div>
+                    <h2 class="text-xl font-bold mb-2">Import Bank Statement</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6">
+                        Upload your bank CSV statement to automatically bulk import income deposits and logged expenses.
+                    </p>
+
+                    <div id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleFileDrop(event)" class="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 rounded-2xl p-8 cursor-pointer transition-colors bg-slate-50/50 dark:bg-slate-900/50">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 mb-2"></i>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">Click to upload or drag & drop statement CSV</p>
+                        <p class="text-xs text-slate-400 mt-1">Accepts standard CSV/TXT format (Date, Description, Amount)</p>
+                        <input type="file" id="file-input" accept=".csv,.txt" onchange="handleFileSelect(event)" class="hidden">
+                    </div>
+
+                    <div class="mt-4 flex justify-center gap-3">
+                        <button onclick="loadDemoCSV()" class="text-xs px-3.5 py-2 bg-slate-100 dark:bg-slate-700 rounded-xl text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-200">
+                            Load Demo Bank CSV Sheet
+                        </button>
+                    </div>
+                </div>
+
+                <div id="import-preview-box" class="hidden bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-lg">Parsed Statement Rows</h3>
+                        <button onclick="importSelectedTransactions()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold">
+                            Import Selected
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="text-xs text-slate-400 uppercase border-b border-slate-100 dark:border-slate-700">
+                                <tr>
+                                    <th class="pb-3 w-8"><input type="checkbox" checked onclick="toggleAllImportCheckboxes(this)"></th>
+                                    <th class="pb-3 font-semibold">Date</th>
+                                    <th class="pb-3 font-semibold">Description</th>
+                                    <th class="pb-3 font-semibold">Type/Category</th>
+                                    <th class="pb-3 font-semibold">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="import-table-body" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                <!-- JS population -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal: Add / Edit Recurring Expense -->
+    <div id="modal-recurring" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+                <h3 class="font-bold text-lg" id="rec-modal-title">Add Recurring Expense</h3>
+                <button type="button" onclick="closeRecurringModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="recurring-form" onsubmit="handleSaveRecurring(event)" class="space-y-4">
+                <input type="hidden" id="rec-id">
+                
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Title / Description</label>
+                    <input type="text" id="rec-name" required placeholder="e.g. Internet & Fiber" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Amount (€)</label>
+                        <input type="number" id="rec-amount" step="0.01" min="0.01" required placeholder="50.00" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Frequency</label>
+                        <select id="rec-freq" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="Monthly">Monthly</option>
+                            <option value="Weekly">Weekly</option>
+                            <option value="Yearly">Yearly</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Category</label>
+                    <select id="rec-category" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <option value="Utilities & Bills">Utilities & Bills</option>
+                        <option value="Subscriptions">Subscriptions</option>
+                        <option value="Food & Groceries">Food & Groceries</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Start Date</label>
+                        <input type="date" id="rec-start-date" required class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-semibold uppercase text-slate-500">End Date</label>
+                            <label class="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 cursor-pointer font-bold">
+                                <input type="checkbox" id="rec-no-end" onchange="toggleEndDatePicker(this.checked)" checked class="rounded text-emerald-600"> No end
+                            </label>
+                        </div>
+                        <input type="date" id="rec-end-date" disabled class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-xs opacity-50 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeRecurringModal()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-200 transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all">
+                        Save Recurring Rule
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Income Entry -->
+    <div id="modal-income" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white">Edit Income Entry</h3>
+                <button type="button" onclick="closeIncomeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="edit-income-form" onsubmit="handleSaveIncomeEdit(event)" class="space-y-4">
+                <input type="hidden" id="edit-inc-id">
+                
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Source / Employer</label>
+                    <input type="text" id="edit-inc-source" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Amount (€)</label>
+                    <input type="number" id="edit-inc-amount" step="0.01" min="0.01" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Date Received</label>
+                    <input type="date" id="edit-inc-date" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeIncomeModal()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-200 transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all">
+                        Update Income
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Pocket Details Modal -->
+    <div id="modal-pocket" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white">Edit Savings Pocket</h3>
+                <button type="button" onclick="closePocketModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="edit-pocket-form" onsubmit="handleSavePocketEdit(event)" class="space-y-4">
+                <input type="hidden" id="edit-pocket-id">
+                
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Pocket Name</label>
+                    <input type="text" id="edit-pocket-name" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Monthly Target (€)</label>
+                    <input type="number" id="edit-pocket-amount" step="0.01" min="0" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closePocketModal()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-200 transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all">
+                        Save Pocket
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Modal: GitHub Sync Settings -->
+    <div id="modal-github" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-xl w-full p-6 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+                <div>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2"><i class="fa-brands fa-github"></i> GitHub Sync Settings</h3>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Connect PaySmart to one JSON file in a GitHub repository.</p>
+                </div>
+                <button type="button" onclick="closeGitHubSettings()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="github-settings-form" onsubmit="handleSaveGitHubSettings(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Repository Owner</label>
+                        <input type="text" id="github-owner" required placeholder="your-github-username" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Repository</label>
+                        <input type="text" id="github-repo" required placeholder="PaySmart" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">JSON File Path</label>
+                        <input type="text" id="github-path" required value="PaySmart_Data.json" placeholder="data/PaySmart_Data.json" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Branch</label>
+                        <input type="text" id="github-branch" required value="main" placeholder="main" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Fine-grained Personal Access Token</label>
+                    <input type="password" id="github-token" required autocomplete="off" placeholder="github_pat_..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Use a token restricted to this repository with <strong>Contents: Read and write</strong>. Never commit the token into this HTML or your repository.</p>
+                </div>
+
+                <label class="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 cursor-pointer">
+                    <input type="checkbox" id="github-remember-token" class="mt-0.5 rounded text-emerald-600">
+                    <span class="text-[11px] text-amber-800 dark:text-amber-300"><strong>Remember token on this device.</strong> Leave this off for better security. When off, the token lasts only for the current browser session.</span>
+                </label>
+
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-300">
+                    <strong>Privacy:</strong> Your JSON contains financial data. Use a <strong>private GitHub repository</strong> unless you intentionally want that data to be public.
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-2 pt-1">
+                    <button type="button" onclick="disconnectGitHub()" class="sm:w-auto px-4 py-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl hover:bg-rose-100 dark:hover:bg-rose-950/70 transition-all">Disconnect</button>
+                    <div class="flex-1"></div>
+                    <button type="button" onclick="closeGitHubSettings()" class="px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-200 transition-all">Cancel</button>
+                    <button type="submit" class="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all">Save & Load from GitHub</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- GITHUB SYNC CONFIGURATION ---
+        const GITHUB_CONFIG_KEY = 'paysmart_github_config_v1';
+        const GITHUB_TOKEN_SESSION_KEY = 'paysmart_github_token_session_v1';
+        const GITHUB_TOKEN_LOCAL_KEY = 'paysmart_github_token_local_v1';
+        const GITHUB_API_VERSION = '2026-03-10';
+        let githubLastKnownSha = null;
+        let githubSyncInProgress = false;
+        let githubSaveTimer = null;
+        let githubPendingSave = false;
+        let githubConflict = false;
+
+        // Initial Savings Pockets Defaults
+        const DEFAULT_POCKETS = [
+            { id: 'personal', name: 'Personal Savings Account', amount: 500, icon: 'fa-user-shield', desc: 'Main personal emergency & wealth account.' },
+            { id: 'wife', name: 'Shared Savings (Wife)', amount: 400, icon: 'fa-heart', desc: 'Joint household long-term savings.' },
+            { id: 'car', name: 'Car Pocket', amount: 50, icon: 'fa-car', desc: 'Car maintenance, fuel & insurance fund.' },
+            { id: 'cats', name: 'Cats Pocket', amount: 25, icon: 'fa-cat', desc: 'Cat food, vet checkups & care.' },
+            { id: 'tennis', name: 'Tennis Pocket', amount: 20, icon: 'fa-table-tennis-paddle-ball', desc: 'Tennis court rentals & gear.' }
+        ];
+
+        // Default Recurring Expenses
+        const DEFAULT_RECURRING = [
+            { id: 'rec-1', name: 'Home Fiber Internet', amount: 45.00, category: 'Utilities & Bills', freq: 'Monthly', startDate: '2026-01-01', endDate: null, active: true },
+            { id: 'rec-2', name: 'Streaming Subscription', amount: 14.99, category: 'Subscriptions', freq: 'Monthly', startDate: '2026-01-01', endDate: null, active: true }
+        ];
+
+        let state = {
+            pockets: DEFAULT_POCKETS,
+            recurring: DEFAULT_RECURRING,
+            incomes: [],
+            expenses: [],
+            selectedCycleIndex: 0
+        };
+
+        let activePayPeriods = [];
+        let allocationChartInstance = null;
+        let weeklyBarChartInstance = null;
+        let parsedImportData = [];
+
+        window.onload = async function() {
+            const hadLocalData = loadFromLocalStorage();
+            activePayPeriods = generatePayPeriods(6);
+
+            const todayStr = new Date().toISOString().substring(0, 10);
+            if (document.getElementById('income-date')) document.getElementById('income-date').value = todayStr;
+            if (document.getElementById('exp-date')) document.getElementById('exp-date').value = todayStr;
+
+            initCycleSelector();
+            renderAll();
+
+            let loadedFromGitHub = false;
+            if (isGitHubConfigured() && getGitHubToken()) {
+                loadedFromGitHub = await loadFromGitHub({ silent: true });
+            } else if (isGitHubConfigured(false)) {
+                updateSyncBadge('auth', 'GitHub login');
+            }
+
+            if (!loadedFromGitHub && !hadLocalData && state.incomes.length === 0 && state.expenses.length === 0) {
+                seedDemoData({ sync: false });
+                renderAll();
+            }
+        };
+
+        // --- NEW: EXPORT JSON FUNCTIONALITY ---
+        function exportJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            const downloadAnchor = document.createElement('a');
+            const dateISO = new Date().toISOString().slice(0, 10);
+            
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `PaySmart_Data_${dateISO}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+
+            showToast("Exported state as JSON!");
+        }
+
+        // --- GITHUB SYNC ENGINE ---
+        function updateSyncBadge(status, message) {
+            const indicator = document.getElementById("sync-indicator");
+            const text = document.getElementById("sync-status-text");
+            if (!indicator || !text) return;
+
+            if (status === "syncing") {
+                indicator.className = "w-2 h-2 rounded-full bg-amber-500 animate-pulse";
+                text.innerText = message || "Syncing...";
+            } else if (status === "synced") {
+                indicator.className = "w-2 h-2 rounded-full bg-emerald-500";
+                text.innerText = message || "GitHub Synced";
+            } else if (status === "auth") {
+                indicator.className = "w-2 h-2 rounded-full bg-amber-500";
+                text.innerText = message || "GitHub Login";
+            } else if (status === "conflict") {
+                indicator.className = "w-2 h-2 rounded-full bg-rose-500";
+                text.innerText = message || "Sync Conflict";
+            } else if (status === "error") {
+                indicator.className = "w-2 h-2 rounded-full bg-rose-500";
+                text.innerText = message || "Sync Error";
+            } else {
+                indicator.className = "w-2 h-2 rounded-full bg-slate-400";
+                text.innerText = message || "Local";
+            }
+        }
+
+        function getGitHubConfig() {
+            try {
+                return JSON.parse(localStorage.getItem(GITHUB_CONFIG_KEY) || 'null');
+            } catch (e) {
+                console.error('GitHub config parse error', e);
+                return null;
+            }
+        }
+
+        function getGitHubToken() {
+            return sessionStorage.getItem(GITHUB_TOKEN_SESSION_KEY) || localStorage.getItem(GITHUB_TOKEN_LOCAL_KEY) || '';
+        }
+
+        function isGitHubConfigured(requireToken = true) {
+            const cfg = getGitHubConfig();
+            const hasConfig = !!(cfg && cfg.owner && cfg.repo && cfg.path && cfg.branch);
+            return requireToken ? (hasConfig && !!getGitHubToken()) : hasConfig;
+        }
+
+        function githubFileUrl(cfg) {
+            const path = cfg.path.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+            return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${path}`;
+        }
+
+        function githubHeaders() {
+            const token = getGitHubToken();
+            const headers = {
+                'Accept': 'application/vnd.github+json',
+                'X-GitHub-Api-Version': GITHUB_API_VERSION
+            };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            return headers;
+        }
+
+        function utf8ToBase64(value) {
+            const bytes = new TextEncoder().encode(value);
+            let binary = '';
+            const chunkSize = 0x8000;
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+                binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+            }
+            return btoa(binary);
+        }
+
+        function base64ToUtf8(value) {
+            const binary = atob((value || '').replace(/\s/g, ''));
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            return new TextDecoder().decode(bytes);
+        }
+
+        function normalizeLoadedState(loadedState) {
+            if (!loadedState || typeof loadedState !== 'object') throw new Error('GitHub JSON is not a valid PaySmart state object.');
+            if (!Array.isArray(loadedState.incomes)) loadedState.incomes = [];
+            if (!Array.isArray(loadedState.expenses)) loadedState.expenses = [];
+            if (!Array.isArray(loadedState.pockets) || loadedState.pockets.length === 0) loadedState.pockets = structuredClone(DEFAULT_POCKETS);
+            if (!Array.isArray(loadedState.recurring)) loadedState.recurring = structuredClone(DEFAULT_RECURRING);
+            if (!Number.isInteger(loadedState.selectedCycleIndex)) loadedState.selectedCycleIndex = 0;
+
+            loadedState.pockets.forEach(p => {
+                if (p.id === 'tennis') p.icon = 'fa-table-tennis-paddle-ball';
+            });
+            return loadedState;
+        }
+
+        async function getGitHubFile() {
+            const cfg = getGitHubConfig();
+            if (!cfg) throw new Error('GitHub sync is not configured.');
+
+            const response = await fetch(`${githubFileUrl(cfg)}?ref=${encodeURIComponent(cfg.branch)}`, {
+                method: 'GET',
+                headers: githubHeaders(),
+                cache: 'no-store'
+            });
+
+            if (response.status === 404) return null;
+            if (!response.ok) {
+                let detail = '';
+                try { detail = (await response.json()).message || ''; } catch (_) {}
+                throw new Error(`GitHub read failed (${response.status})${detail ? ': ' + detail : ''}`);
+            }
+            return await response.json();
+        }
+
+        async function loadFromGitHub({ silent = false } = {}) {
+            if (!isGitHubConfigured()) {
+                if (isGitHubConfigured(false)) updateSyncBadge('auth', 'GitHub login');
+                else updateSyncBadge('local');
+                return false;
+            }
+
+            updateSyncBadge('syncing', 'Loading...');
+            try {
+                const remote = await getGitHubFile();
+                if (!remote) {
+                    githubLastKnownSha = null;
+                    githubConflict = false;
+                    updateSyncBadge('synced', 'GitHub Ready');
+                    if (!silent) showToast('GitHub JSON file was not found at the configured path.');
+                    return false;
+                }
+
+                const remoteState = normalizeLoadedState(JSON.parse(base64ToUtf8(remote.content)));
+                state = remoteState;
+                githubLastKnownSha = remote.sha;
+                githubConflict = false;
+                localStorage.setItem('savesmart_data_v5', JSON.stringify(state));
+                initCycleSelector();
+                renderAll();
+                updateSyncBadge('synced');
+                if (!silent) showToast('Loaded latest data from GitHub!');
+                return true;
+            } catch (err) {
+                console.error('GitHub pull error:', err);
+                updateSyncBadge('error');
+                if (!silent) showToast(err.message || 'Could not load data from GitHub.');
+                return false;
+            }
+        }
+
+        async function saveToGitHub({ silent = true, force = false } = {}) {
+            if (!isGitHubConfigured()) {
+                if (isGitHubConfigured(false)) updateSyncBadge('auth', 'GitHub login');
+                return false;
+            }
+            if (githubSyncInProgress) {
+                githubPendingSave = true;
+                return false;
+            }
+
+            githubSyncInProgress = true;
+            updateSyncBadge('syncing', 'Saving...');
+            try {
+                const cfg = getGitHubConfig();
+                const remote = await getGitHubFile();
+
+                if (!force && githubLastKnownSha && (!remote || remote.sha !== githubLastKnownSha)) {
+                    githubConflict = true;
+                    updateSyncBadge('conflict');
+                    showToast('GitHub has a newer version. Open GitHub settings and load it before saving again.');
+                    return false;
+                }
+
+                const body = {
+                    message: `PaySmart data sync ${new Date().toISOString()}`,
+                    content: utf8ToBase64(JSON.stringify(state, null, 2)),
+                    branch: cfg.branch
+                };
+                if (remote?.sha) body.sha = remote.sha;
+
+                const response = await fetch(githubFileUrl(cfg), {
+                    method: 'PUT',
+                    headers: { ...githubHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    let detail = '';
+                    try { detail = (await response.json()).message || ''; } catch (_) {}
+                    if (response.status === 409 || response.status === 422) {
+                        githubConflict = true;
+                        updateSyncBadge('conflict');
+                        throw new Error('GitHub file changed before this save completed. Load the latest GitHub version and try again.');
+                    }
+                    throw new Error(`GitHub save failed (${response.status})${detail ? ': ' + detail : ''}`);
+                }
+
+                const result = await response.json();
+                githubLastKnownSha = result?.content?.sha || null;
+                githubConflict = false;
+                updateSyncBadge('synced');
+                if (!silent) showToast('Saved current data to GitHub!');
+                return true;
+            } catch (err) {
+                console.error('GitHub save error:', err);
+                if (!githubConflict) updateSyncBadge('error');
+                if (!silent || githubConflict) showToast(err.message || 'Could not save data to GitHub.');
+                return false;
+            } finally {
+                githubSyncInProgress = false;
+                if (githubPendingSave && !githubConflict) {
+                    githubPendingSave = false;
+                    clearTimeout(githubSaveTimer);
+                    githubSaveTimer = setTimeout(() => saveToGitHub({ silent: true }), 150);
+                }
+            }
+        }
+
+        function queueGitHubSave() {
+            if (!isGitHubConfigured() || githubConflict) return;
+            clearTimeout(githubSaveTimer);
+            githubSaveTimer = setTimeout(() => saveToGitHub({ silent: true }), 700);
+        }
+
+        async function manualSync() {
+            if (!isGitHubConfigured()) {
+                openGitHubSettings();
+                showToast('Configure GitHub sync first.');
+                return;
+            }
+            await saveToGitHub({ silent: false });
+        }
+
+        function openGitHubSettings() {
+            const cfg = getGitHubConfig() || { owner: '', repo: '', path: 'PaySmart_Data.json', branch: 'main' };
+            document.getElementById('github-owner').value = cfg.owner || '';
+            document.getElementById('github-repo').value = cfg.repo || '';
+            document.getElementById('github-path').value = cfg.path || 'PaySmart_Data.json';
+            document.getElementById('github-branch').value = cfg.branch || 'main';
+            document.getElementById('github-token').value = getGitHubToken();
+            document.getElementById('github-remember-token').checked = !!localStorage.getItem(GITHUB_TOKEN_LOCAL_KEY);
+            document.getElementById('modal-github').classList.remove('hidden');
+        }
+
+        function closeGitHubSettings() {
+            document.getElementById('modal-github')?.classList.add('hidden');
+        }
+
+        async function handleSaveGitHubSettings(event) {
+            event.preventDefault();
+            const cfg = {
+                owner: document.getElementById('github-owner').value.trim(),
+                repo: document.getElementById('github-repo').value.trim(),
+                path: document.getElementById('github-path').value.trim().replace(/^\/+/, ''),
+                branch: document.getElementById('github-branch').value.trim() || 'main'
+            };
+            const token = document.getElementById('github-token').value.trim();
+            const remember = document.getElementById('github-remember-token').checked;
+
+            if (!cfg.owner || !cfg.repo || !cfg.path || !token) {
+                showToast('Complete all GitHub settings first.');
+                return;
+            }
+
+            localStorage.setItem(GITHUB_CONFIG_KEY, JSON.stringify(cfg));
+            sessionStorage.setItem(GITHUB_TOKEN_SESSION_KEY, token);
+            if (remember) localStorage.setItem(GITHUB_TOKEN_LOCAL_KEY, token);
+            else localStorage.removeItem(GITHUB_TOKEN_LOCAL_KEY);
+
+            githubLastKnownSha = null;
+            githubPendingSave = false;
+            githubConflict = false;
+            closeGitHubSettings();
+
+            const loaded = await loadFromGitHub({ silent: false });
+            if (!loaded) {
+                try {
+                    const remote = await getGitHubFile();
+                    if (!remote && confirm('The configured JSON file does not exist on GitHub. Create it now using the current PaySmart data?')) {
+                        await saveToGitHub({ silent: false, force: true });
+                    }
+                } catch (_) {
+                    // loadFromGitHub already displayed the relevant error.
+                }
+            }
+        }
+
+        function disconnectGitHub() {
+            if (!confirm('Disconnect GitHub sync on this browser? Your GitHub JSON file will not be deleted.')) return;
+            localStorage.removeItem(GITHUB_CONFIG_KEY);
+            localStorage.removeItem(GITHUB_TOKEN_LOCAL_KEY);
+            sessionStorage.removeItem(GITHUB_TOKEN_SESSION_KEY);
+            githubLastKnownSha = null;
+            githubPendingSave = false;
+            githubConflict = false;
+            closeGitHubSettings();
+            updateSyncBadge('local');
+            showToast('GitHub sync disconnected. Local data was kept.');
+        }
+
+        // --- NAVIGATION & UI HELPERS ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const activeTab = document.getElementById('tab-' + tabId);
+            if (activeTab) activeTab.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2";
+            });
+
+            const currentNav = document.getElementById('nav-' + tabId);
+            if (currentNav) {
+                currentNav.className = "nav-btn px-3.5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-400";
+            }
+
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                btn.className = "mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400";
+            });
+            const currentMobileNav = document.getElementById('mobile-nav-' + tabId);
+            if (currentMobileNav) {
+                currentMobileNav.className = "mobile-nav-btn flex flex-col items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold";
+            }
+        }
+
+        function switchLogSubtab(type) {
+            const expForm = document.getElementById('expense-form');
+            const incForm = document.getElementById('income-form');
+            const expBtn = document.getElementById('subtab-btn-expense');
+            const incBtn = document.getElementById('subtab-btn-income');
+
+            if (type === 'expense') {
+                expForm.classList.remove('hidden');
+                incForm.classList.add('hidden');
+                expBtn.className = "flex-1 pb-3 text-center font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 dark:text-emerald-400";
+                incBtn.className = "flex-1 pb-3 text-center font-bold text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300";
+            } else {
+                expForm.classList.add('hidden');
+                incForm.classList.remove('hidden');
+                incBtn.className = "flex-1 pb-3 text-center font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 dark:text-emerald-400";
+                expBtn.className = "flex-1 pb-3 text-center font-bold text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300";
+            }
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            const themeIcon = document.getElementById('theme-icon');
+            if (themeIcon) {
+                themeIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            }
+            if (activePayPeriods && activePayPeriods.length > 0) {
+                const selectedPeriod = activePayPeriods[state.selectedCycleIndex];
+                renderCharts(calculateCycleMetrics(selectedPeriod), selectedPeriod);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-message');
+            if (!toast || !msgEl) return;
+
+            msgEl.innerText = message;
+            toast.classList.remove('translate-x-full', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+            }, 3000);
+        }
+
+        function initCycleSelector() {
+            const selector = document.getElementById('cycle-selector');
+            if (!selector) return;
+
+            selector.innerHTML = activePayPeriods.map((period, idx) => `
+                <option value="${idx}" ${idx === state.selectedCycleIndex ? 'selected' : ''}>
+                    Cycle: ${period.label}
+                </option>
+            `).join('');
+        }
+
+        function changePayPeriodView(index) {
+            state.selectedCycleIndex = parseInt(index);
+            renderAll();
+        }
+
+        // --- SLOVENIAN NATIONAL HOLIDAY & PAYDAY ENGINE ---
+        function getEasterSunday(year) {
+            const a = year % 19;
+            const b = Math.floor(year / 100);
+            const c = year % 100;
+            const d = Math.floor(b / 4);
+            const e = b % 4;
+            const f = Math.floor((b + 8) / 25);
+            const g = Math.floor((b - f + 1) / 3);
+            const h = (19 * a + b - d - g + 15) % 30;
+            const i = Math.floor(c / 4);
+            const k = c % 4;
+            const L = (32 + 2 * e + 2 * i - h - k) % 7;
+            const m = Math.floor((a + 11 * h + 22 * L) / 451);
+            const month = Math.floor((h + L - 7 * m + 114) / 31);
+            const day = ((h + L - 7 * m + 114) % 31) + 1;
+            return new Date(year, month - 1, day);
+        }
+
+        function isSlovenianHoliday(date) {
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const day = date.getDate();
+
+            const fixedHolidays = [
+                "0-1", "0-2", "1-8", "3-27", "4-1", "4-2",
+                "5-25", "7-15", "9-31", "10-1", "11-25", "11-26"
+            ];
+
+            if (fixedHolidays.includes(`${month}-${day}`)) {
+                return true;
+            }
+
+            const easterSunday = getEasterSunday(year);
+            const easterMonday = new Date(easterSunday);
+            easterMonday.setDate(easterSunday.getDate() + 1);
+
+            const whitSunday = new Date(easterSunday);
+            whitSunday.setDate(easterSunday.getDate() + 49);
+
+            const isSameDay = (d1, d2) => 
+                d1.getFullYear() === d2.getFullYear() && 
+                d1.getMonth() === d2.getMonth() && 
+                d1.getDate() === d2.getDate();
+
+            return isSameDay(date, easterSunday) || isSameDay(date, easterMonday) || isSameDay(date, whitSunday);
+        }
+
+        function getAdjustedPayday(year, month) {
+            let d = new Date(year, month, 15);
+            while (d.getDay() === 0 || d.getDay() === 6 || isSlovenianHoliday(d)) {
+                d.setDate(d.getDate() + 1);
+            }
+            return d;
+        }
+
+        function formatDateISO(d) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function generatePayPeriods(monthsAround = 6) {
+            const periods = [];
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
+
+            for (let i = -monthsAround; i <= monthsAround; i++) {
+                const startPayday = getAdjustedPayday(currentYear, currentMonth + i);
+                const nextPayday = getAdjustedPayday(currentYear, currentMonth + i + 1);
+
+                const endPayday = new Date(nextPayday);
+                endPayday.setDate(endPayday.getDate() - 1);
+
+                const startStr = formatDateISO(startPayday);
+                const endStr = formatDateISO(endPayday);
+
+                const optStart = { month: 'short', day: 'numeric' };
+                const optEnd = { month: 'short', day: 'numeric', year: 'numeric' };
+                const label = `${startPayday.toLocaleDateString('en-US', optStart)} – ${endPayday.toLocaleDateString('en-US', optEnd)}`;
+
+                periods.push({
+                    startStr,
+                    endStr,
+                    startDate: startPayday,
+                    endDate: endPayday,
+                    label
+                });
+            }
+
+            return periods;
+        }
+
+        function getCurrentPeriodIndex() {
+            const todayStr = formatDateISO(new Date());
+            const idx = activePayPeriods.findIndex(p => todayStr >= p.startStr && todayStr <= p.endStr);
+            return idx !== -1 ? idx : Math.floor(activePayPeriods.length / 2);
+        }
+
+        function updatePaydayBanner() {
+            const today = new Date();
+            const todayStr = formatDateISO(today);
+            
+            let nextPayday = getAdjustedPayday(today.getFullYear(), today.getMonth());
+            if (todayStr >= formatDateISO(nextPayday)) {
+                nextPayday = getAdjustedPayday(today.getFullYear(), today.getMonth() + 1);
+            }
+
+            const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+            const displayEl = document.getElementById('payday-date-display');
+            if (displayEl) displayEl.innerText = nextPayday.toLocaleDateString('en-US', options);
+
+            const diffTime = nextPayday - today;
+            const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+            
+            const countEl = document.getElementById('payday-countdown-days');
+            if (countEl) countEl.innerText = `${diffDays} Day${diffDays === 1 ? '' : 's'}`;
+
+            const orig15th = new Date(nextPayday.getFullYear(), nextPayday.getMonth(), 15);
+            const noteEl = document.getElementById('payday-rule-note');
+            
+            if (noteEl) {
+                if (nextPayday.getTime() !== orig15th.getTime()) {
+                    const wasWeekend = orig15th.getDay() === 0 || orig15th.getDay() === 6;
+                    const wasHoliday = isSlovenianHoliday(orig15th);
+
+                    if (wasWeekend && wasHoliday) {
+                        noteEl.innerText = "Postponed: Weekend & SI Holiday";
+                    } else if (wasHoliday) {
+                        noteEl.innerText = "Postponed: Slovenian National Holiday";
+                    } else {
+                        noteEl.innerText = "Postponed: Weekend 15th";
+                    }
+                } else {
+                    noteEl.innerText = "Standard 15th monthly schedule";
+                }
+            }
+        }
+
+        function seedDemoData({ sync = true } = {}) {
+            const currentPeriod = activePayPeriods[state.selectedCycleIndex];
+            const startD = currentPeriod.startStr;
+
+            state.incomes = [{ id: 'inc-1', date: startD, source: 'Employer Salary Deposit', amount: 2650 }];
+            
+            const expDate1 = new Date(currentPeriod.startDate);
+            expDate1.setDate(expDate1.getDate() + 2);
+            
+            const expDate2 = new Date(currentPeriod.startDate);
+            expDate2.setDate(expDate2.getDate() + 5);
+
+            state.expenses = [
+                { id: 'exp-1', date: formatDateISO(expDate1), category: 'Food & Groceries', amount: 95.40, note: 'Supermarket Groceries' },
+                { id: 'exp-2', date: formatDateISO(expDate2), category: 'Utilities & Bills', amount: 78.00, note: 'Electricity Bill' }
+            ];
+            saveToLocalStorage({ sync });
+        }
+
+        function saveToLocalStorage({ sync = true } = {}) {
+            localStorage.setItem('savesmart_data_v5', JSON.stringify(state));
+            if (sync) queueGitHubSave();
+        }
+
+        function loadFromLocalStorage() {
+            const data = localStorage.getItem('savesmart_data_v5');
+            if (data) {
+                try {
+                    state = JSON.parse(data);
+                    if (!state.pockets || state.pockets.length === 0) state.pockets = DEFAULT_POCKETS;
+                    if (!state.recurring) state.recurring = DEFAULT_RECURRING;
+
+                    state.pockets.forEach(p => {
+                        if (p.id === 'tennis' && p.icon !== 'fa-table-tennis-paddle-ball') {
+                            p.icon = 'fa-table-tennis-paddle-ball';
+                        }
+                    });
+                } catch(e) {
+                    console.error("Storage parse error", e);
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        function resetData() {
+            if (confirm("Reset application data to original demo rules?")) {
+                localStorage.removeItem('savesmart_data_v5');
+                state.incomes = [];
+                state.expenses = [];
+                state.pockets = DEFAULT_POCKETS;
+                state.recurring = DEFAULT_RECURRING;
+                state.selectedCycleIndex = getCurrentPeriodIndex();
+                seedDemoData();
+                initCycleSelector();
+                renderAll();
+                showToast("Reset to initial defaults.");
+            }
+        }
+
+        function getTotalMonthlySavingsGoal() {
+            return state.pockets.reduce((sum, p) => sum + Number(p.amount), 0);
+        }
+
+        function getActiveRecurringTotal() {
+            return state.recurring
+                .filter(r => r.active)
+                .reduce((sum, r) => sum + Number(r.amount), 0);
+        }
+
+        function calculateCycleMetrics(period) {
+            const periodIncomes = state.incomes.filter(i => i.date >= period.startStr && i.date <= period.endStr);
+            const periodExpenses = state.expenses.filter(e => e.date >= period.startStr && e.date <= period.endStr);
+
+            const totalIncome = periodIncomes.reduce((acc, curr) => acc + Number(curr.amount), 0);
+            const totalSavingsTarget = getTotalMonthlySavingsGoal();
+            const totalRecurring = getActiveRecurringTotal();
+            
+            const disposableMonthlyBudget = Math.max(0, totalIncome - totalSavingsTarget - totalRecurring);
+            const weeklyBudget = disposableMonthlyBudget / 4;
+            const totalExpenses = periodExpenses.reduce((acc, curr) => acc + Number(curr.amount), 0);
+
+            const today = new Date();
+            const todayStr = formatDateISO(today);
+
+            let currentWeekNum = 1;
+            if (todayStr >= period.startStr && todayStr <= period.endStr) {
+                const diffTime = today - period.startDate;
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                currentWeekNum = Math.min(4, Math.max(1, Math.floor(diffDays / 7) + 1));
+            }
+
+            const currentWeekExpenses = periodExpenses.filter(e => {
+                const eDate = new Date(e.date);
+                const diffTime = eDate - period.startDate;
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                const weekIndex = Math.min(4, Math.max(1, Math.floor(diffDays / 7) + 1));
+                return weekIndex === currentWeekNum;
+            }).reduce((acc, curr) => acc + Number(curr.amount), 0);
+
+            return {
+                totalIncome,
+                totalSavingsTarget,
+                totalRecurring,
+                disposableMonthlyBudget,
+                weeklyBudget,
+                totalExpenses,
+                currentWeekNum,
+                currentWeekExpenses
+            };
+        }
+
+        function renderAll() {
+            updatePaydayBanner();
+            
+            if (!activePayPeriods || activePayPeriods.length === 0) {
+                activePayPeriods = generatePayPeriods(6);
+            }
+
+            if (state.selectedCycleIndex === undefined || state.selectedCycleIndex < 0 || state.selectedCycleIndex >= activePayPeriods.length) {
+                state.selectedCycleIndex = getCurrentPeriodIndex();
+            }
+
+            const selectedPeriod = activePayPeriods[state.selectedCycleIndex];
+            const metrics = calculateCycleMetrics(selectedPeriod);
+
+            if (document.getElementById('dash-income')) document.getElementById('dash-income').innerText = `€${metrics.totalIncome.toFixed(2)}`;
+            if (document.getElementById('dash-savings')) document.getElementById('dash-savings').innerText = `€${metrics.totalSavingsTarget.toFixed(2)}`;
+            if (document.getElementById('dash-recurring-total')) document.getElementById('dash-recurring-total').innerText = `€${metrics.totalRecurring.toFixed(2)}`;
+            if (document.getElementById('pockets-total-target')) document.getElementById('pockets-total-target').innerText = `€${metrics.totalSavingsTarget.toFixed(2)}`;
+            if (document.getElementById('income-rule-preview')) document.getElementById('income-rule-preview').innerText = `- €${metrics.totalSavingsTarget.toFixed(2)}`;
+            if (document.getElementById('dash-disposable')) document.getElementById('dash-disposable').innerText = `€${metrics.disposableMonthlyBudget.toFixed(2)}`;
+            if (document.getElementById('dash-weekly-budget')) document.getElementById('dash-weekly-budget').innerText = `€${metrics.weeklyBudget.toFixed(2)} / wk`;
+
+            const remWeekly = metrics.weeklyBudget - metrics.currentWeekExpenses;
+            if (document.getElementById('dash-weekly-rem')) document.getElementById('dash-weekly-rem').innerText = `Remaining: €${remWeekly.toFixed(2)}`;
+
+            if (document.getElementById('week-badge')) document.getElementById('week-badge').innerText = `Week ${metrics.currentWeekNum} of 4`;
+            if (document.getElementById('week-spent-txt')) document.getElementById('week-spent-txt').innerText = `€${metrics.currentWeekExpenses.toFixed(2)}`;
+            if (document.getElementById('week-limit-txt')) document.getElementById('week-limit-txt').innerText = `€${metrics.weeklyBudget.toFixed(2)}`;
+
+            const pct = metrics.weeklyBudget > 0 ? Math.min(100, (metrics.currentWeekExpenses / metrics.weeklyBudget) * 100) : 0;
+            const progressBar = document.getElementById('week-progress-bar');
+            if (progressBar) {
+                progressBar.style.width = `${pct}%`;
+                if (pct > 100) {
+                    progressBar.className = "bg-rose-500 h-full rounded-full transition-all duration-500";
+                    if (document.getElementById('week-status-msg')) {
+                        document.getElementById('week-status-msg').innerText = "Exceeded weekly limit!";
+                        document.getElementById('week-status-msg').className = "text-rose-500 font-medium";
+                    }
+                } else {
+                    progressBar.className = "bg-emerald-500 h-full rounded-full transition-all duration-500";
+                    if (document.getElementById('week-status-msg')) {
+                        document.getElementById('week-status-msg').innerText = "On track";
+                        document.getElementById('week-status-msg').className = "text-emerald-600 dark:text-emerald-400 font-medium";
+                    }
+                }
+            }
+
+            renderPocketsList();
+            renderRecurringGrid();
+            renderExpensesTable();
+            renderIncomeTable();
+            renderSalaryHistoryTable();
+            renderCharts(metrics, selectedPeriod);
+        }
+
+        // RENDER ALL SALARIES & AVERAGE CALCULATION
+        function renderSalaryHistoryTable() {
+            const tbody = document.getElementById('all-salaries-table-body');
+            const avgDisplay = document.getElementById('salary-avg-display');
+            if (!tbody) return;
+
+            const sortedIncomes = [...state.incomes].sort((a, b) => b.date.localeCompare(a.date));
+
+            if (sortedIncomes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400 text-xs">No salary/income entries recorded yet.</td></tr>`;
+                if (avgDisplay) avgDisplay.innerText = '€0.00';
+                return;
+            }
+
+            const cycleTotals = {};
+            sortedIncomes.forEach(inc => {
+                const matchedPeriod = activePayPeriods.find(p => inc.date >= p.startStr && inc.date <= p.endStr);
+                const periodKey = matchedPeriod ? matchedPeriod.label : inc.date.substring(0, 7);
+                cycleTotals[periodKey] = (cycleTotals[periodKey] || 0) + Number(inc.amount);
+            });
+
+            const uniqueCyclesCount = Object.keys(cycleTotals).length;
+            const totalSum = Object.values(cycleTotals).reduce((a, b) => a + b, 0);
+            const avgSalary = uniqueCyclesCount > 0 ? (totalSum / uniqueCyclesCount) : 0;
+
+            if (avgDisplay) avgDisplay.innerText = `€${avgSalary.toFixed(2)}`;
+
+            tbody.innerHTML = sortedIncomes.map(inc => {
+                const matchedPeriod = activePayPeriods.find(p => inc.date >= p.startStr && inc.date <= p.endStr);
+                const cycleLabel = matchedPeriod ? matchedPeriod.label : 'Custom Date';
+
+                return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                        <td class="py-2.5 font-medium text-slate-800 dark:text-slate-200">${inc.date}</td>
+                        <td class="py-2.5 text-slate-600 dark:text-slate-300">${inc.source}</td>
+                        <td class="py-2.5"><span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-700/60 rounded text-[10px] font-semibold">${cycleLabel}</span></td>
+                        <td class="py-2.5 text-right font-bold text-emerald-600 dark:text-emerald-400">+€${Number(inc.amount).toFixed(2)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderPocketsList() {
+            const container = document.getElementById('dash-pockets-list');
+            const gridContainer = document.getElementById('pockets-grid');
+
+            if (container) {
+                container.innerHTML = state.pockets.map(pocket => `
+                    <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs">
+                                <i class="fa-solid ${pocket.icon}"></i>
+                            </div>
+                            <span class="text-xs sm:text-sm font-medium">${pocket.name}</span>
+                        </div>
+                        <span class="font-bold text-sm">€${Number(pocket.amount).toFixed(2)}</span>
+                    </div>
+                `).join('');
+            }
+
+            if (gridContainer) {
+                gridContainer.innerHTML = state.pockets.map(pocket => `
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg">
+                                    <i class="fa-solid ${pocket.icon}"></i>
+                                </div>
+                                <button onclick="openPocketModal('${pocket.id}')" class="text-xs text-slate-400 hover:text-emerald-500 transition-colors" title="Edit Name or Amount">
+                                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                                </button>
+                            </div>
+                            <h3 class="font-bold text-slate-900 dark:text-white text-base">${pocket.name}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4">${pocket.desc}</p>
+                        </div>
+                        <div class="border-t border-slate-100 dark:border-slate-700 pt-4 flex items-center justify-between">
+                            <span class="text-xs text-slate-400 uppercase font-semibold">Monthly Goal</span>
+                            <span class="text-xl font-bold text-emerald-600 dark:text-emerald-400">€${Number(pocket.amount).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // POCKET MODAL EDIT LOGIC
+        function openPocketModal(id) {
+            const pocket = state.pockets.find(p => p.id === id);
+            if (!pocket) return;
+
+            document.getElementById('edit-pocket-id').value = pocket.id;
+            document.getElementById('edit-pocket-name').value = pocket.name;
+            document.getElementById('edit-pocket-amount').value = pocket.amount;
+
+            const modal = document.getElementById('modal-pocket');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closePocketModal() {
+            const modal = document.getElementById('modal-pocket');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function handleSavePocketEdit(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-pocket-id').value;
+            const name = document.getElementById('edit-pocket-name').value.trim();
+            const amount = parseFloat(document.getElementById('edit-pocket-amount').value);
+
+            if (!name || isNaN(amount) || amount < 0) {
+                showToast("Please enter a valid name and amount.");
+                return;
+            }
+
+            const pocket = state.pockets.find(p => p.id === id);
+            if (pocket) {
+                pocket.name = name;
+                pocket.amount = amount;
+                saveToLocalStorage();
+                renderAll();
+                closePocketModal();
+                showToast("Savings pocket updated!");
+            }
+        }
+
+        function promptAddNewPocket() {
+            const name = prompt("Enter new Savings Pocket name:");
+            if (!name) return;
+            const amountStr = prompt("Enter monthly savings goal (€):", "50");
+            if (!amountStr) return;
+            const amount = parseFloat(amountStr);
+            if (isNaN(amount) || amount < 0) return;
+
+            state.pockets.push({
+                id: 'pocket-' + Date.now(),
+                name,
+                amount,
+                icon: 'fa-piggy-bank',
+                desc: 'Custom user defined savings pocket.'
+            });
+
+            saveToLocalStorage();
+            renderAll();
+            showToast("Custom pocket added!");
+        }
+
+        function renderRecurringGrid() {
+            const grid = document.getElementById('recurring-grid');
+            const dashList = document.getElementById('dash-recurring-list');
+
+            if (dashList) {
+                if (state.recurring.length === 0) {
+                    dashList.innerHTML = `<p class="text-xs text-slate-400 py-2">No recurring expenses set.</p>`;
+                } else {
+                    dashList.innerHTML = state.recurring.slice(0, 4).map(r => `
+                        <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs">
+                                    <i class="fa-solid fa-rotate"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs sm:text-sm font-medium leading-tight">${r.name}</p>
+                                    <span class="text-[10px] text-slate-400">${r.freq} • ${r.endDate ? 'Ends ' + r.endDate : 'No end date'}</span>
+                                </div>
+                            </div>
+                            <span class="font-bold text-sm">€${Number(r.amount).toFixed(2)}</span>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            if (grid) {
+                if (state.recurring.length === 0) {
+                    grid.innerHTML = `
+                        <div class="col-span-full text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+                            <i class="fa-solid fa-rotate text-4xl text-slate-300 dark:text-slate-600 mb-3"></i>
+                            <p class="text-sm font-bold text-slate-600 dark:text-slate-300">No Recurring Expenses Defined</p>
+                            <p class="text-xs text-slate-400 mt-1 mb-4">Click below to create fixed bills like fiber internet or subscriptions.</p>
+                            <button onclick="showAddRecurringModal()" class="px-4 py-2 bg-emerald-600 text-white font-semibold text-xs rounded-xl shadow-md">
+                                + Add First Recurring Rule
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    grid.innerHTML = state.recurring.map(r => `
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-2.5 py-1 ${r.active ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-slate-100 text-slate-500'} text-[11px] font-semibold rounded-full">
+                                        ${r.active ? 'Active' : 'Paused'}
+                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="editRecurring('${r.id}')" class="text-xs text-slate-400 hover:text-emerald-500 transition-colors" title="Edit Rule">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                        <button onclick="toggleRecurringActive('${r.id}')" class="text-xs text-slate-400 hover:text-amber-500" title="Pause/Play">
+                                            <i class="fa-solid ${r.active ? 'fa-pause' : 'fa-play'}"></i>
+                                        </button>
+                                        <button onclick="deleteRecurring('${r.id}')" class="text-xs text-slate-400 hover:text-rose-500" title="Delete Rule">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <h3 class="font-bold text-slate-900 dark:text-white text-base">${r.name}</h3>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 space-y-1.5 mt-3">
+                                    <p><i class="fa-solid fa-tag w-4 text-slate-400"></i> Category: <strong class="text-slate-700 dark:text-slate-200">${r.category}</strong></p>
+                                    <p><i class="fa-solid fa-clock-rotate-left w-4 text-slate-400"></i> Frequency: <strong class="text-slate-700 dark:text-slate-200">${r.freq}</strong></p>
+                                    <p><i class="fa-solid fa-calendar w-4 text-slate-400"></i> Start Date: ${r.startDate}</p>
+                                    <p><i class="fa-solid fa-calendar-check w-4 text-slate-400"></i> End Date: ${r.endDate ? r.endDate : '<span class="text-emerald-600 dark:text-emerald-400 font-semibold">Never (Infinite)</span>'}</p>
+                                </div>
+                            </div>
+                            <div class="border-t border-slate-100 dark:border-slate-700 pt-4 mt-4 flex items-center justify-between">
+                                <span class="text-xs text-slate-400 uppercase font-semibold">Cost per cycle</span>
+                                <span class="text-xl font-bold text-amber-600 dark:text-amber-400">€${Number(r.amount).toFixed(2)}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        function editRecurring(id) {
+            const rec = state.recurring.find(r => r.id === id);
+            if (!rec) return;
+
+            document.getElementById('rec-id').value = rec.id;
+            document.getElementById('rec-name').value = rec.name;
+            document.getElementById('rec-amount').value = rec.amount;
+            document.getElementById('rec-freq').value = rec.freq || 'Monthly';
+            document.getElementById('rec-category').value = rec.category || 'Utilities & Bills';
+            document.getElementById('rec-start-date').value = rec.startDate || new Date().toISOString().substring(0, 10);
+            
+            const noEndChk = document.getElementById('rec-no-end');
+            const endDateInput = document.getElementById('rec-end-date');
+            if (rec.endDate) {
+                noEndChk.checked = false;
+                endDateInput.value = rec.endDate;
+            } else {
+                noEndChk.checked = true;
+                endDateInput.value = '';
+            }
+            toggleEndDatePicker(noEndChk.checked);
+
+            document.getElementById('rec-modal-title').innerText = 'Edit Recurring Expense';
+            document.getElementById('modal-recurring').classList.remove('hidden');
+        }
+
+        function showAddRecurringModal() {
+            const form = document.getElementById('recurring-form');
+            if (form) form.reset();
+            
+            const recId = document.getElementById('rec-id');
+            if (recId) recId.value = '';
+
+            const titleEl = document.getElementById('rec-modal-title');
+            if (titleEl) titleEl.innerText = 'Add Recurring Expense';
+
+            const startDate = document.getElementById('rec-start-date');
+            if (startDate) startDate.value = new Date().toISOString().substring(0, 10);
+            
+            const noEndChk = document.getElementById('rec-no-end');
+            if (noEndChk) noEndChk.checked = true;
+            toggleEndDatePicker(true);
+
+            const modal = document.getElementById('modal-recurring');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeRecurringModal() {
+            const modal = document.getElementById('modal-recurring');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function toggleEndDatePicker(noEnd) {
+            const endDateInput = document.getElementById('rec-end-date');
+            if (!endDateInput) return;
+            if (noEnd) {
+                endDateInput.disabled = true;
+                endDateInput.value = '';
+                endDateInput.classList.add('opacity-50', 'bg-slate-100', 'dark:bg-slate-800');
+            } else {
+                endDateInput.disabled = false;
+                endDateInput.classList.remove('opacity-50', 'bg-slate-100', 'dark:bg-slate-800');
+            }
+        }
+
+        function handleSaveRecurring(e) {
+            e.preventDefault();
+            const recId = document.getElementById('rec-id').value;
+            const nameInput = document.getElementById('rec-name');
+            const amountInput = document.getElementById('rec-amount');
+            const freqInput = document.getElementById('rec-freq');
+            const catInput = document.getElementById('rec-category');
+            const startInput = document.getElementById('rec-start-date');
+            const noEndChk = document.getElementById('rec-no-end');
+            const endInput = document.getElementById('rec-end-date');
+
+            const name = nameInput.value.trim();
+            const amount = parseFloat(amountInput.value);
+            const freq = freqInput.value;
+            const category = catInput.value;
+            const startDate = startInput.value;
+            const endDate = noEndChk.checked ? null : (endInput.value || null);
+
+            if (!name || isNaN(amount) || amount <= 0 || !startDate) {
+                showToast("Please fill all required fields correctly.");
+                return;
+            }
+
+            if (recId) {
+                const idx = state.recurring.findIndex(r => r.id === recId);
+                if (idx !== -1) {
+                    state.recurring[idx] = {
+                        ...state.recurring[idx],
+                        name,
+                        amount,
+                        freq,
+                        category,
+                        startDate,
+                        endDate
+                    };
+                    showToast("Recurring expense updated!");
+                }
+            } else {
+                state.recurring.push({
+                    id: 'rec-' + Date.now(),
+                    name,
+                    amount,
+                    freq,
+                    category,
+                    startDate,
+                    endDate,
+                    active: true
+                });
+                showToast("New recurring expense added!");
+            }
+
+            saveToLocalStorage();
+            renderAll();
+            closeRecurringModal();
+        }
+
+        function toggleRecurringActive(id) {
+            const rec = state.recurring.find(r => r.id === id);
+            if (rec) {
+                rec.active = !rec.active;
+                saveToLocalStorage();
+                renderAll();
+                showToast(`Recurring expense ${rec.active ? 'activated' : 'paused'}.`);
+            }
+        }
+
+        function deleteRecurring(id) {
+            if (confirm("Delete this recurring expense rule?")) {
+                state.recurring = state.recurring.filter(r => r.id !== id);
+                saveToLocalStorage();
+                renderAll();
+                showToast("Recurring rule deleted.");
+            }
+        }
+
+        function renderExpensesTable() {
+            const tbody = document.getElementById('expenses-table-body');
+            if (!tbody) return;
+
+            const selectedPeriod = activePayPeriods[state.selectedCycleIndex];
+            const search = (document.getElementById('search-expenses')?.value || '').toLowerCase();
+            const catFilter = document.getElementById('filter-category')?.value || 'ALL';
+            const sortVal = document.getElementById('sort-expenses')?.value || 'date-desc';
+
+            let list = state.expenses.filter(e => e.date >= selectedPeriod.startStr && e.date <= selectedPeriod.endStr);
+
+            if (catFilter !== 'ALL') list = list.filter(e => e.category === catFilter);
+            if (search) list = list.filter(e => e.note.toLowerCase().includes(search) || e.category.toLowerCase().includes(search));
+
+            list.sort((a, b) => {
+                if (sortVal === 'date-desc') return b.date.localeCompare(a.date);
+                if (sortVal === 'date-asc') return a.date.localeCompare(b.date);
+                if (sortVal === 'amount-desc') return Number(b.amount) - Number(a.amount);
+                if (sortVal === 'amount-asc') return Number(a.amount) - Number(b.amount);
+                return 0;
+            });
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 text-xs">No matching expenses recorded for active period (${selectedPeriod.label}).</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(exp => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                    <td class="py-3 text-xs font-medium whitespace-nowrap">${exp.date}</td>
+                    <td class="py-3 text-xs">
+                        <span class="px-2 py-1 bg-slate-100 dark:bg-slate-700/60 rounded-md text-[11px] font-medium">
+                            ${exp.category}
+                        </span>
+                    </td>
+                    <td class="py-3 text-xs font-medium">${exp.note}</td>
+                    <td class="py-3 text-xs font-bold text-slate-900 dark:text-white">€${Number(exp.amount).toFixed(2)}</td>
+                    <td class="py-3 text-xs text-right space-x-2">
+                        <button onclick="editExpense('${exp.id}')" class="text-slate-400 hover:text-emerald-500 transition-colors" title="Edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteExpense('${exp.id}')" class="text-slate-400 hover:text-rose-500 transition-colors" title="Delete">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editExpense(id) {
+            const exp = state.expenses.find(e => e.id === id);
+            if (!exp) return;
+
+            const newAmount = prompt("Edit expense amount (€):", exp.amount);
+            if (!newAmount) return;
+            const amt = parseFloat(newAmount);
+            if (isNaN(amt) || amt <= 0) return;
+
+            const newNote = prompt("Edit description:", exp.note);
+            if (!newNote) return;
+
+            exp.amount = amt;
+            exp.note = newNote.trim();
+
+            saveToLocalStorage();
+            renderAll();
+            showToast("Expense updated!");
+        }
+
+        function renderCharts(metrics, period) {
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+
+            const allocCanvas = document.getElementById('allocationChart');
+            if (allocCanvas) {
+                const allocCtx = allocCanvas.getContext('2d');
+                if (allocationChartInstance) allocationChartInstance.destroy();
+
+                allocationChartInstance = new Chart(allocCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Savings Goals (€' + metrics.totalSavingsTarget.toFixed(0) + ')', 'Recurring Bills', 'Variable Spent', 'Unspent Pool'],
+                        datasets: [{
+                            data: [
+                                metrics.totalSavingsTarget,
+                                metrics.totalRecurring,
+                                metrics.totalExpenses,
+                                Math.max(0, metrics.disposableMonthlyBudget - metrics.totalExpenses)
+                            ],
+                            backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444', '#10b981'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 } } }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+
+            const barCanvas = document.getElementById('weeklyBarChart');
+            if (barCanvas) {
+                const barCtx = barCanvas.getContext('2d');
+                if (weeklyBarChartInstance) weeklyBarChartInstance.destroy();
+
+                const periodExpenses = state.expenses.filter(e => e.date >= period.startStr && e.date <= period.endStr);
+                const weeklyTotals = [0, 0, 0, 0];
+
+                periodExpenses.forEach(exp => {
+                    const eDate = new Date(exp.date);
+                    const diffTime = eDate - period.startDate;
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    const weekIndex = Math.min(3, Math.max(0, Math.floor(diffDays / 7)));
+                    weeklyTotals[weekIndex] += Number(exp.amount);
+                });
+
+                weeklyBarChartInstance = new Chart(barCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [
+                            { label: 'Spent (€)', data: weeklyTotals, backgroundColor: '#10b981', borderRadius: 6 },
+                            { label: 'Weekly Cap (€)', data: Array(4).fill(metrics.weeklyBudget), type: 'line', borderColor: '#cbd5e1', borderDash: [4, 4], fill: false }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 } } } },
+                        scales: {
+                            x: { ticks: { color: textColor }, grid: { display: false } },
+                            y: { ticks: { color: textColor }, grid: { color: isDark ? '#334155' : '#f1f5f9' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function handleAddExpense(e) {
+            e.preventDefault();
+            const amount = parseFloat(document.getElementById('exp-amount').value);
+            const category = document.getElementById('exp-category').value;
+            const date = document.getElementById('exp-date').value;
+            const note = document.getElementById('exp-note').value.trim();
+
+            if (!amount || !date || !note) return;
+
+            state.expenses.push({ id: 'exp-' + Date.now(), amount, category, date, note });
+            
+            const newPeriodIdx = activePayPeriods.findIndex(p => date >= p.startStr && date <= p.endStr);
+            if (newPeriodIdx !== -1) {
+                state.selectedCycleIndex = newPeriodIdx;
+                initCycleSelector();
+            }
+
+            saveToLocalStorage();
+            renderAll();
+            showToast("Expense logged!");
+            document.getElementById('expense-form').reset();
+            document.getElementById('exp-date').value = new Date().toISOString().substring(0, 10);
+            switchTab('history');
+        }
+
+        function handleAddIncome(e) {
+            e.preventDefault();
+            const amount = parseFloat(document.getElementById('income-amount').value);
+            const date = document.getElementById('income-date').value;
+            const source = document.getElementById('income-source').value.trim();
+
+            if (!amount || !date || !source) return;
+
+            state.incomes.push({ id: 'inc-' + Date.now(), amount, date, source });
+
+            const newPeriodIdx = activePayPeriods.findIndex(p => date >= p.startStr && date <= p.endStr);
+            if (newPeriodIdx !== -1) {
+                state.selectedCycleIndex = newPeriodIdx;
+                initCycleSelector();
+            }
+
+            saveToLocalStorage();
+            renderAll();
+            showToast("Income logged!");
+            document.getElementById('income-form').reset();
+            document.getElementById('income-date').value = new Date().toISOString().substring(0, 10);
+            switchTab('dashboard');
+        }
+
+        function deleteExpense(id) {
+            state.expenses = state.expenses.filter(e => e.id !== id);
+            saveToLocalStorage();
+            renderAll();
+            showToast("Expense deleted.");
+        }
+
+        function renderIncomeTable() {
+            const tbody = document.getElementById('income-table-body');
+            const countEl = document.getElementById('income-log-count');
+            if (!tbody) return;
+
+            const selectedPeriod = activePayPeriods[state.selectedCycleIndex];
+            const list = state.incomes.filter(i => i.date >= selectedPeriod.startStr && i.date <= selectedPeriod.endStr);
+            
+            if (countEl) countEl.innerText = `${list.length} entry${list.length === 1 ? '' : 'ies'}`;
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400 text-xs">No income deposits logged for active period (${selectedPeriod.label}).</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(inc => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                    <td class="py-2.5 text-xs font-medium whitespace-nowrap">${inc.date}</td>
+                    <td class="py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200">${inc.source}</td>
+                    <td class="py-2.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">+€${Number(inc.amount).toFixed(2)}</td>
+                    <td class="py-2.5 text-xs text-right space-x-2">
+                        <button onclick="editIncome('${inc.id}')" class="text-slate-400 hover:text-emerald-500 transition-colors" title="Edit Income">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteIncome('${inc.id}')" class="text-slate-400 hover:text-rose-500 transition-colors" title="Delete Income">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editIncome(id) {
+            const inc = state.incomes.find(i => i.id === id);
+            if (!inc) return;
+
+            document.getElementById('edit-inc-id').value = inc.id;
+            document.getElementById('edit-inc-source').value = inc.source;
+            document.getElementById('edit-inc-amount').value = inc.amount;
+            document.getElementById('edit-inc-date').value = inc.date;
+
+            document.getElementById('modal-income').classList.remove('hidden');
+        }
+
+        function closeIncomeModal() {
+            document.getElementById('modal-income').classList.add('hidden');
+        }
+
+        function handleSaveIncomeEdit(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-inc-id').value;
+            const source = document.getElementById('edit-inc-source').value.trim();
+            const amount = parseFloat(document.getElementById('edit-inc-amount').value);
+            const date = document.getElementById('edit-inc-date').value;
+
+            if (!source || isNaN(amount) || amount <= 0 || !date) return;
+
+            const inc = state.incomes.find(i => i.id === id);
+            if (inc) {
+                inc.source = source;
+                inc.amount = amount;
+                inc.date = date;
+
+                saveToLocalStorage();
+                renderAll();
+                closeIncomeModal();
+                showToast("Income entry updated!");
+            }
+        }
+
+        function deleteIncome(id) {
+            if (confirm("Delete this income entry?")) {
+                state.incomes = state.incomes.filter(i => i.id !== id);
+                saveToLocalStorage();
+                renderAll();
+                showToast("Income entry removed.");
+            }
+        }
+
+        // --- CSV IMPORTER ENGINE ---
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('drop-zone').classList.add('border-emerald-500', 'bg-emerald-50/20');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('drop-zone').classList.remove('border-emerald-500', 'bg-emerald-50/20');
+        }
+
+        function handleFileDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('drop-zone').classList.remove('border-emerald-500', 'bg-emerald-50/20');
+
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                processCSVFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                processCSVFile(files[0]);
+            }
+        }
+
+        function processCSVFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                parseCSVText(evt.target.result);
+            };
+            reader.readAsText(file);
+        }
+
+        function loadDemoCSV() {
+            const demoCSV = `Date,Description,Amount
+2026-09-15,Employer Monthly Salary,2650.00
+2026-09-16,Spar Supermarket,-84.50
+2026-09-18,Petrol Station Fuel,-65.00
+2026-09-20,Mondraker Bike Shop,-45.00
+2026-09-22,Restavracija Kosilo,-32.00`;
+            parseCSVText(demoCSV);
+        }
+
+        function parseCSVText(csvText) {
+            const lines = csvText.split(/\r\n|\n/);
+            parsedImportData = [];
+
+            lines.forEach((line, index) => {
+                if (index === 0 && line.toLowerCase().includes('date')) return; // skip header
+                const parts = line.split(',');
+                if (parts.length >= 3) {
+                    const dateStr = parts[0].trim();
+                    const descStr = parts[1].trim();
+                    const amtVal = parseFloat(parts[2].trim());
+
+                    if (dateStr && descStr && !isNaN(amtVal)) {
+                        parsedImportData.push({
+                            id: 'imp-' + index + '-' + Date.now(),
+                            date: dateStr,
+                            desc: descStr,
+                            amount: Math.abs(amtVal),
+                            isIncome: amtVal > 0,
+                            category: amtVal > 0 ? 'Salary' : 'Food & Groceries',
+                            selected: true
+                        });
+                    }
+                }
+            });
+
+            renderImportPreview();
+        }
+
+        function renderImportPreview() {
+            const previewBox = document.getElementById('import-preview-box');
+            const tbody = document.getElementById('import-table-body');
+            if (!previewBox || !tbody) return;
+
+            if (parsedImportData.length === 0) {
+                showToast("No valid transaction rows found in CSV.");
+                return;
+            }
+
+            previewBox.classList.remove('hidden');
+            tbody.innerHTML = parsedImportData.map((row, idx) => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/30">
+                    <td class="py-2.5"><input type="checkbox" ${row.selected ? 'checked' : ''} onchange="parsedImportData[${idx}].selected = this.checked"></td>
+                    <td class="py-2.5 font-medium text-xs">${row.date}</td>
+                    <td class="py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200">${row.desc}</td>
+                    <td class="py-2.5 text-xs">${row.isIncome ? '<span class="text-emerald-600 font-bold">Income</span>' : row.category}</td>
+                    <td class="py-2.5 font-bold text-xs ${row.isIncome ? 'text-emerald-600' : 'text-slate-900 dark:text-white'}">
+                        ${row.isIncome ? '+' : ''}€${row.amount.toFixed(2)}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function toggleAllImportCheckboxes(master) {
+            parsedImportData.forEach(r => r.selected = master.checked);
+            renderImportPreview();
+        }
+
+        function importSelectedTransactions() {
+            const selected = parsedImportData.filter(r => r.selected);
+            if (selected.length === 0) {
+                showToast("Please select at least one row to import.");
+                return;
+            }
+
+            selected.forEach(r => {
+                if (r.isIncome) {
+                    state.incomes.push({
+                        id: 'inc-' + Date.now() + Math.random(),
+                        date: r.date,
+                        source: r.desc,
+                        amount: r.amount
+                    });
+                } else {
+                    state.expenses.push({
+                        id: 'exp-' + Date.now() + Math.random(),
+                        date: r.date,
+                        note: r.desc,
+                        category: r.category,
+                        amount: r.amount
+                    });
+                }
+            });
+
+            saveToLocalStorage();
+            renderAll();
+            document.getElementById('import-preview-box').classList.add('hidden');
+            showToast(`Successfully imported ${selected.length} transactions!`);
+            switchTab('dashboard');
+        }
+    </script>
+</body>
+</html>
