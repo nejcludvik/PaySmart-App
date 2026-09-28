@@ -259,7 +259,7 @@
                         <div class="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400" id="dash-savings">€995.00</div>
                         <span id="dash-savings-pct" class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">—</span>
                     </div>
-                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Personal, Wife, Car, Cats, Tennis</div>
+                    <div id="dash-savings-subtitle" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate" title="">Monthly savings goals</div>
                 </div>
 
                 <div class="mobile-kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -1833,6 +1833,26 @@
             };
         }
 
+        function updateSavingsSubtitle() {
+            const el = document.getElementById('dash-savings-subtitle');
+            if (!el) return;
+
+            const names = (state.pockets || [])
+                .filter(pocket => Number(pocket.amount) > 0)
+                .map(pocket => (pocket.name || '').trim())
+                .filter(Boolean);
+
+            if (names.length === 0) {
+                el.textContent = 'No savings goals set';
+                el.title = '';
+                return;
+            }
+
+            const text = names.join(', ');
+            el.textContent = text;
+            el.title = text;
+        }
+
         function renderAll() {
             updatePaydayBanner();
             
@@ -1884,6 +1904,7 @@
                 }
             }
 
+            updateSavingsSubtitle();
             renderPocketsList();
             renderRecurringGrid();
             renderExpensesTable();
