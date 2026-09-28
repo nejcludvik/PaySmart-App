@@ -460,7 +460,8 @@
                     </div>
                     <div class="flex items-baseline gap-2 flex-wrap">
                         <div class="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400" id="dash-savings">€995.00</div>
-                        <span id="dash-savings-pct" class="ps-percentage-pill text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">—</span>
+                        <span id="dash-savings-pct" class="ps-percentage-pill text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">Cycle —</span>
+                        <span id="dash-savings-avg-pct" class="ps-percentage-pill text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Avg —</span>
                     </div>
                     <div id="dash-savings-subtitle" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate" title="">Monthly savings goals</div>
                     <div class="ps-metric-track"><div id="dash-savings-bar" class="ps-metric-fill ps-fill-savings"></div></div>
@@ -475,7 +476,8 @@
                     </div>
                     <div class="flex items-baseline gap-2 flex-wrap">
                         <div class="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400" id="dash-recurring-total">€0.00</div>
-                        <span id="dash-recurring-pct" class="ps-percentage-pill text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">—</span>
+                        <span id="dash-recurring-pct" class="ps-percentage-pill text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">Cycle —</span>
+                        <span id="dash-recurring-avg-pct" class="ps-percentage-pill text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Avg —</span>
                     </div>
                     <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Active recurring commitments</div>
                     <div class="ps-metric-track"><div id="dash-recurring-bar" class="ps-metric-fill ps-fill-recurring"></div></div>
@@ -517,7 +519,7 @@
                         </div>
                         <div>
                             <h3 class="font-bold text-lg">Salary History & Averages</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">All recorded income entries with calculated cycle averages.</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Latest 12 income entries shown. Average income is calculated from all historical payday cycles.</p>
                         </div>
                     </div>
                     <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-4 py-2 rounded-xl text-right">
@@ -2008,6 +2010,49 @@
                 .reduce((sum, i) => sum + Number(i.amount || 0), 0);
         }
 
+        function getPayPeriodForDate(dateStr) {
+            if (!dateStr) return null;
+            const parts = String(dateStr).split('-').map(Number);
+            if (parts.length !== 3 || parts.some(n => !Number.isFinite(n))) return null;
+
+            const [year, month] = parts;
+            for (let offset = -2; offset <= 1; offset++) {
+                const startPayday = getAdjustedPayday(year, (month - 1) + offset);
+                const nextPayday = getAdjustedPayday(year, (month - 1) + offset + 1);
+                const endPayday = new Date(nextPayday);
+                endPayday.setDate(endPayday.getDate() - 1);
+
+                const startStr = formatDateISO(startPayday);
+                const endStr = formatDateISO(endPayday);
+                if (dateStr >= startStr && dateStr <= endStr) {
+                    const optStart = { month: 'short', day: 'numeric' };
+                    const optEnd = { month: 'short', day: 'numeric', year: 'numeric' };
+                    return {
+                        startStr,
+                        endStr,
+                        startDate: startPayday,
+                        endDate: endPayday,
+                        label: `${startPayday.toLocaleDateString('en-US', optStart)} – ${endPayday.toLocaleDateString('en-US', optEnd)}`
+                    };
+                }
+            }
+            return null;
+        }
+
+        function getAverageIncomePerCycle() {
+            const cycleTotals = {};
+            (state.incomes || []).forEach(inc => {
+                const period = getPayPeriodForDate(inc.date);
+                const key = period ? period.startStr : String(inc.date || '').substring(0, 7);
+                if (!key) return;
+                cycleTotals[key] = (cycleTotals[key] || 0) + Number(inc.amount || 0);
+            });
+
+            const totals = Object.values(cycleTotals);
+            if (totals.length === 0) return 0;
+            return totals.reduce((sum, value) => sum + Number(value || 0), 0) / totals.length;
+        }
+
         function calculateCycleMetrics(period) {
             const periodIncomes = state.incomes.filter(i => i.date >= period.startStr && i.date <= period.endStr);
             const periodExpenses = state.expenses.filter(e => e.date >= period.startStr && e.date <= period.endStr);
@@ -2090,8 +2135,11 @@
             if (document.getElementById('pockets-total-target')) document.getElementById('pockets-total-target').innerText = `€${metrics.totalSavingsTarget.toFixed(2)}`;
             if (document.getElementById('income-rule-preview')) document.getElementById('income-rule-preview').innerText = `- €${metrics.totalSavingsTarget.toFixed(2)}`;
             if (document.getElementById('dash-disposable')) document.getElementById('dash-disposable').innerText = `€${metrics.disposableMonthlyBudget.toFixed(2)}`;
-            if (document.getElementById('dash-savings-pct')) document.getElementById('dash-savings-pct').innerText = formatIncomePercentage(metrics.totalSavingsTarget, metrics.totalIncome);
-            if (document.getElementById('dash-recurring-pct')) document.getElementById('dash-recurring-pct').innerText = formatIncomePercentage(metrics.totalRecurring, metrics.totalIncome);
+            const averageIncome = getAverageIncomePerCycle();
+            if (document.getElementById('dash-savings-pct')) document.getElementById('dash-savings-pct').innerText = `Cycle ${formatIncomePercentage(metrics.totalSavingsTarget, metrics.totalIncome)}`;
+            if (document.getElementById('dash-savings-avg-pct')) document.getElementById('dash-savings-avg-pct').innerText = `Avg ${formatIncomePercentage(metrics.totalSavingsTarget, averageIncome)}`;
+            if (document.getElementById('dash-recurring-pct')) document.getElementById('dash-recurring-pct').innerText = `Cycle ${formatIncomePercentage(metrics.totalRecurring, metrics.totalIncome)}`;
+            if (document.getElementById('dash-recurring-avg-pct')) document.getElementById('dash-recurring-avg-pct').innerText = `Avg ${formatIncomePercentage(metrics.totalRecurring, averageIncome)}`;
             if (document.getElementById('dash-disposable-pct')) document.getElementById('dash-disposable-pct').innerText = formatIncomePercentage(metrics.disposableMonthlyBudget, metrics.totalIncome);
             updateMetricProgress('dash-income-bar', metrics.totalIncome, metrics.totalIncome);
             updateMetricProgress('dash-savings-bar', metrics.totalSavingsTarget, metrics.totalIncome);
@@ -2140,29 +2188,19 @@
             const avgDisplay = document.getElementById('salary-avg-display');
             if (!tbody) return;
 
-            const sortedIncomes = [...state.incomes].sort((a, b) => b.date.localeCompare(a.date));
+            const sortedIncomes = [...(state.incomes || [])].sort((a, b) => b.date.localeCompare(a.date));
+            const averageIncome = getAverageIncomePerCycle();
+
+            if (avgDisplay) avgDisplay.innerText = `€${averageIncome.toFixed(2)}`;
 
             if (sortedIncomes.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400 text-xs">No salary/income entries recorded yet.</td></tr>`;
-                if (avgDisplay) avgDisplay.innerText = '€0.00';
                 return;
             }
 
-            const cycleTotals = {};
-            sortedIncomes.forEach(inc => {
-                const matchedPeriod = activePayPeriods.find(p => inc.date >= p.startStr && inc.date <= p.endStr);
-                const periodKey = matchedPeriod ? matchedPeriod.label : inc.date.substring(0, 7);
-                cycleTotals[periodKey] = (cycleTotals[periodKey] || 0) + Number(inc.amount);
-            });
-
-            const uniqueCyclesCount = Object.keys(cycleTotals).length;
-            const totalSum = Object.values(cycleTotals).reduce((a, b) => a + b, 0);
-            const avgSalary = uniqueCyclesCount > 0 ? (totalSum / uniqueCyclesCount) : 0;
-
-            if (avgDisplay) avgDisplay.innerText = `€${avgSalary.toFixed(2)}`;
-
-            tbody.innerHTML = sortedIncomes.map(inc => {
-                const matchedPeriod = activePayPeriods.find(p => inc.date >= p.startStr && inc.date <= p.endStr);
+            const visibleIncomes = sortedIncomes.slice(0, 12);
+            tbody.innerHTML = visibleIncomes.map(inc => {
+                const matchedPeriod = getPayPeriodForDate(inc.date);
                 const cycleLabel = matchedPeriod ? matchedPeriod.label : 'Custom Date';
 
                 return `
@@ -2180,6 +2218,7 @@
             const container = document.getElementById('dash-pockets-list');
             const gridContainer = document.getElementById('pockets-grid');
             const selectedIncome = getSelectedCycleIncome();
+            const averageIncome = getAverageIncomePerCycle();
 
             if (container) {
                 container.innerHTML = state.pockets.map(pocket => `
@@ -2192,7 +2231,10 @@
                         </div>
                         <div class="text-right shrink-0">
                             <span class="font-bold text-sm block">€${Number(pocket.amount).toFixed(2)}</span>
-                            <span class="text-[10px] font-semibold text-blue-600 dark:text-blue-400">${formatIncomePercentage(pocket.amount, selectedIncome)} of income</span>
+                            <div class="flex items-center justify-end gap-1 mt-1 flex-wrap">
+                                <span class="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">Cycle ${formatIncomePercentage(pocket.amount, selectedIncome)}</span>
+                                <span class="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Avg ${formatIncomePercentage(pocket.amount, averageIncome)}</span>
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -2217,7 +2259,10 @@
                             <span class="text-xs text-slate-400 uppercase font-semibold">Monthly Goal</span>
                             <div class="text-right">
                                 <span class="text-xl font-bold text-emerald-600 dark:text-emerald-400 block">€${Number(pocket.amount).toFixed(2)}</span>
-                                <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400">${formatIncomePercentage(pocket.amount, selectedIncome)} of income</span>
+                                <div class="flex items-center justify-end gap-1 mt-1 flex-wrap">
+                                    <span class="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">Cycle ${formatIncomePercentage(pocket.amount, selectedIncome)}</span>
+                                    <span class="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Avg ${formatIncomePercentage(pocket.amount, averageIncome)}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2290,6 +2335,7 @@
             const grid = document.getElementById('recurring-grid');
             const dashList = document.getElementById('dash-recurring-list');
             const selectedIncome = getSelectedCycleIncome();
+            const averageIncome = getAverageIncomePerCycle();
 
             if (dashList) {
                 if (state.recurring.length === 0) {
@@ -2308,7 +2354,10 @@
                             </div>
                             <div class="text-right shrink-0">
                                 <span class="font-bold text-sm block">€${Number(r.amount).toFixed(2)}</span>
-                                <span class="text-[10px] font-semibold text-amber-600 dark:text-amber-400">${formatIncomePercentage(r.amount, selectedIncome)} of income</span>
+                                <div class="flex items-center justify-end gap-1 mt-1 flex-wrap">
+                                    <span class="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">Cycle ${formatIncomePercentage(r.amount, selectedIncome)}</span>
+                                    <span class="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Avg ${formatIncomePercentage(r.amount, averageIncome)}</span>
+                                </div>
                             </div>
                         </div>
                     `).join('');
@@ -2359,7 +2408,10 @@
                                 <span class="text-xs text-slate-400 uppercase font-semibold">Cost per cycle</span>
                                 <div class="text-right">
                                     <span class="text-xl font-bold text-amber-600 dark:text-amber-400 block">€${Number(r.amount).toFixed(2)}</span>
-                                    <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400">${formatIncomePercentage(r.amount, selectedIncome)} of income</span>
+                                    <div class="flex items-center justify-end gap-1 mt-1 flex-wrap">
+                                        <span class="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">Cycle ${formatIncomePercentage(r.amount, selectedIncome)}</span>
+                                        <span class="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Avg ${formatIncomePercentage(r.amount, averageIncome)}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
