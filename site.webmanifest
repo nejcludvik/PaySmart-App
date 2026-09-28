@@ -1,0 +1,18 @@
+{
+  "name": "PaySmart",
+  "short_name": "PaySmart",
+  "description": "Payday cycle financial planner and recurring expense tracker.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#16a34a",
+  "icons": [
+    {
+      "src": "paysmart-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
