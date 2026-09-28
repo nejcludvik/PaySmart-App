@@ -388,12 +388,12 @@
                 </div>
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 relative z-10">
                     <div class="space-y-1">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-sm">
-                            <i class="fa-solid fa-business-time"></i> Payday Rule Active (Slovenia)
+                        <div id="payday-country-badge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-sm">
+                            <i class="fa-solid fa-business-time"></i> Payday Rule Active · Slovenia
                         </div>
                         <h2 class="text-xl sm:text-3xl font-extrabold tracking-tight">Next Payday: <span id="payday-date-display" class="underline decoration-teal-300">Loading...</span></h2>
                         <p id="payday-schedule-description" class="text-xs sm:text-sm text-emerald-100 max-w-xl">
-                            Salary schedule: day 15 of every month. If the scheduled day falls on a weekend or Slovenian holiday, payday automatically shifts to the first working day.
+                            Salary schedule: day 15 of every month. Weekends and nationwide public holidays from your selected country shift payday to the next working day.
                         </p>
                     </div>
                     <div class="bg-white/10 dark:bg-slate-900/30 backdrop-blur-md border border-white/20 p-3 sm:p-4 rounded-xl flex items-center gap-3 sm:gap-4 w-full md:w-auto md:min-w-[230px]">
@@ -416,10 +416,17 @@
                     <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">Finances calculated strictly between salary paydays.</p>
                 </div>
                 <div class="ps-control-bar flex flex-col sm:flex-row gap-2 w-full sm:w-auto p-1.5 rounded-2xl">
-                    <div class="ps-control flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full sm:w-auto" title="Your preferred salary day. Weekends and Slovenian national holidays are automatically moved to the next working day.">
+                    <div class="ps-control flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full sm:w-auto" title="Your preferred salary day. Weekends and nationwide public holidays from the selected country are automatically moved to the next working day.">
                         <i class="fa-solid fa-money-check-dollar text-emerald-500 ml-2"></i>
                         <span class="text-[10px] uppercase tracking-wide font-bold text-slate-400 whitespace-nowrap">Payday</span>
                         <select id="payday-day-selector" onchange="changePaydayDay(this.value)" class="bg-transparent text-xs sm:text-sm font-bold focus:outline-none pr-2 min-w-[78px]">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    <div class="ps-control flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full sm:w-auto" title="Country used for nationwide public-holiday payday adjustments. Regional holidays are intentionally excluded.">
+                        <i class="fa-solid fa-earth-europe text-emerald-500 ml-2"></i>
+                        <span class="text-[10px] uppercase tracking-wide font-bold text-slate-400 whitespace-nowrap">Country</span>
+                        <select id="holiday-country-selector" onchange="changeHolidayCountry(this.value)" class="bg-transparent text-xs sm:text-sm font-bold focus:outline-none pr-2 min-w-[130px] max-w-[190px]">
                             <!-- Populated by JS -->
                         </select>
                     </div>
@@ -1165,6 +1172,66 @@
         const PAYSMART_FUNCTION_NAME = 'paysmart-data';
         const PAYSMART_DATA_ROOT = 'PaySmart_JSON';
 
+        // European country selector used only for nationwide public-holiday payday rules.
+        // Regional/state/canton holidays are intentionally excluded.
+        const EUROPEAN_COUNTRIES = [
+            { code: 'AD', name: 'Andorra' },
+            { code: 'AL', name: 'Albania' },
+            { code: 'AM', name: 'Armenia' },
+            { code: 'AT', name: 'Austria' },
+            { code: 'AZ', name: 'Azerbaijan' },
+            { code: 'BY', name: 'Belarus' },
+            { code: 'BE', name: 'Belgium' },
+            { code: 'BA', name: 'Bosnia & Herzegovina' },
+            { code: 'BG', name: 'Bulgaria' },
+            { code: 'HR', name: 'Croatia' },
+            { code: 'CY', name: 'Cyprus' },
+            { code: 'CZ', name: 'Czechia' },
+            { code: 'DK', name: 'Denmark' },
+            { code: 'EE', name: 'Estonia' },
+            { code: 'FI', name: 'Finland' },
+            { code: 'FR', name: 'France' },
+            { code: 'GE', name: 'Georgia' },
+            { code: 'DE', name: 'Germany' },
+            { code: 'GR', name: 'Greece' },
+            { code: 'HU', name: 'Hungary' },
+            { code: 'IS', name: 'Iceland' },
+            { code: 'IE', name: 'Ireland' },
+            { code: 'IT', name: 'Italy' },
+            { code: 'LV', name: 'Latvia' },
+            { code: 'LI', name: 'Liechtenstein' },
+            { code: 'LT', name: 'Lithuania' },
+            { code: 'LU', name: 'Luxembourg' },
+            { code: 'MT', name: 'Malta' },
+            { code: 'MD', name: 'Moldova' },
+            { code: 'MC', name: 'Monaco' },
+            { code: 'ME', name: 'Montenegro' },
+            { code: 'NL', name: 'Netherlands' },
+            { code: 'MK', name: 'North Macedonia' },
+            { code: 'NO', name: 'Norway' },
+            { code: 'PL', name: 'Poland' },
+            { code: 'PT', name: 'Portugal' },
+            { code: 'RO', name: 'Romania' },
+            { code: 'RU', name: 'Russia' },
+            { code: 'SM', name: 'San Marino' },
+            { code: 'RS', name: 'Serbia' },
+            { code: 'SK', name: 'Slovakia' },
+            { code: 'SI', name: 'Slovenia' },
+            { code: 'ES', name: 'Spain' },
+            { code: 'SE', name: 'Sweden' },
+            { code: 'CH', name: 'Switzerland' },
+            { code: 'TR', name: 'Türkiye' },
+            { code: 'UA', name: 'Ukraine' },
+            { code: 'GB', name: 'United Kingdom' },
+            { code: 'VA', name: 'Vatican City' }
+        ].sort((a, b) => a.name.localeCompare(b.name));
+
+        const OPEN_HOLIDAYS_API = 'https://openholidaysapi.org/PublicHolidays';
+        const NAGER_V3_API = 'https://date.nager.at/api/v3/PublicHolidays';
+        const HOLIDAY_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+        const holidayDatesByCountryYear = new Map();
+        let holidayCalendarLoadError = false;
+
         let supabaseClient = null;
         let currentSession = null;
         let currentUser = null;
@@ -1189,7 +1256,8 @@
                 incomes: [],
                 expenses: [],
                 selectedCycleIndex: 0,
-                paydayDay: 15
+                paydayDay: 15,
+                holidayCountry: 'SI'
             };
         }
 
@@ -1273,12 +1341,15 @@
 
             state = createEmptyState();
             const hadLocalData = loadFromLocalStorage();
+            await ensureHolidayCalendarsForState(state.holidayCountry);
             initCycleSelector();
             renderAll();
 
             const loaded = await loadFromCloud({ silent: true });
             if (!loaded && !hadLocalData) {
                 state = createEmptyState();
+                await ensureHolidayCalendarsForState(state.holidayCountry);
+                activePayPeriods = generatePayPeriods(6);
                 state.selectedCycleIndex = getCurrentPeriodIndex();
                 saveToLocalStorage({ sync: false });
                 initCycleSelector();
@@ -1481,6 +1552,10 @@
             if (!Number.isInteger(loadedState.selectedCycleIndex)) loadedState.selectedCycleIndex = 0;
             const loadedPaydayDay = Number.parseInt(loadedState.paydayDay, 10);
             loadedState.paydayDay = Number.isInteger(loadedPaydayDay) && loadedPaydayDay >= 1 && loadedPaydayDay <= 31 ? loadedPaydayDay : 15;
+
+            // Backward-compatible migration: existing users without a country setting remain on Slovenia.
+            const loadedCountry = String(loadedState.holidayCountry || 'SI').toUpperCase();
+            loadedState.holidayCountry = EUROPEAN_COUNTRIES.some(c => c.code === loadedCountry) ? loadedCountry : 'SI';
             return loadedState;
         }
 
@@ -1531,6 +1606,7 @@
                 state = remoteState;
                 cloudLastKnownSha = result.sha || null;
                 cloudConflict = false;
+                await ensureHolidayCalendarsForState(state.holidayCountry);
                 saveToLocalStorage({ sync: false });
                 initCycleSelector();
                 renderAll();
@@ -1727,6 +1803,14 @@
                 }).join('');
             }
 
+            const countrySelector = document.getElementById('holiday-country-selector');
+            if (countrySelector) {
+                const currentCountry = getConfiguredHolidayCountry();
+                countrySelector.innerHTML = EUROPEAN_COUNTRIES.map(country =>
+                    `<option value="${country.code}" ${country.code === currentCountry ? 'selected' : ''}>${country.name}</option>`
+                ).join('');
+            }
+
             const selector = document.getElementById('cycle-selector');
             if (!selector) return;
 
@@ -1756,7 +1840,38 @@
             showToast(`Payday changed to day ${day}. Cycles were recalculated.`);
         }
 
-        // --- SLOVENIAN NATIONAL HOLIDAY & PAYDAY ENGINE ---
+        async function changeHolidayCountry(value) {
+            const nextCountry = String(value || '').toUpperCase();
+            if (!EUROPEAN_COUNTRIES.some(country => country.code === nextCountry)) return;
+
+            const previousCountry = getConfiguredHolidayCountry();
+            if (nextCountry === previousCountry) return;
+
+            const selector = document.getElementById('holiday-country-selector');
+            if (selector) selector.disabled = true;
+            showToast(`Loading ${getCountryName(nextCountry)} holiday calendar…`);
+
+            const ok = await ensureHolidayCalendarsForState(nextCountry, { forceCurrentYears: true });
+            if (!ok) {
+                if (selector) {
+                    selector.value = previousCountry;
+                    selector.disabled = false;
+                }
+                showToast(`Could not load nationwide holidays for ${getCountryName(nextCountry)}. Country was not changed.`);
+                return;
+            }
+
+            state.holidayCountry = nextCountry;
+            activePayPeriods = generatePayPeriods(6);
+            state.selectedCycleIndex = getCurrentPeriodIndex();
+            initCycleSelector();
+            saveToLocalStorage();
+            renderAll();
+            if (selector) selector.disabled = false;
+            showToast(`Holiday calendar changed to ${getCountryName(nextCountry)}. Cycles were recalculated.`);
+        }
+
+        // --- EUROPEAN NATIONAL HOLIDAY & PAYDAY ENGINE ---
         function getEasterSunday(year) {
             const a = year % 19;
             const b = Math.floor(year / 100);
@@ -1775,33 +1890,185 @@
             return new Date(year, month - 1, day);
         }
 
+        // Offline safety fallback for Slovenia. Other countries use the cached/API calendar.
         function isSlovenianHoliday(date) {
             const year = date.getFullYear();
             const month = date.getMonth();
             const day = date.getDate();
 
             const fixedHolidays = [
-                "0-1", "0-2", "1-8", "3-27", "4-1", "4-2",
-                "5-25", "7-15", "9-31", "10-1", "11-25", "11-26"
+                '0-1', '0-2', '1-8', '3-27', '4-1', '4-2',
+                '5-25', '7-15', '9-31', '10-1', '11-25', '11-26'
             ];
 
-            if (fixedHolidays.includes(`${month}-${day}`)) {
-                return true;
-            }
+            if (fixedHolidays.includes(`${month}-${day}`)) return true;
 
             const easterSunday = getEasterSunday(year);
             const easterMonday = new Date(easterSunday);
             easterMonday.setDate(easterSunday.getDate() + 1);
-
             const whitSunday = new Date(easterSunday);
             whitSunday.setDate(easterSunday.getDate() + 49);
 
-            const isSameDay = (d1, d2) => 
-                d1.getFullYear() === d2.getFullYear() && 
-                d1.getMonth() === d2.getMonth() && 
+            const isSameDay = (d1, d2) =>
+                d1.getFullYear() === d2.getFullYear() &&
+                d1.getMonth() === d2.getMonth() &&
                 d1.getDate() === d2.getDate();
 
             return isSameDay(date, easterSunday) || isSameDay(date, easterMonday) || isSameDay(date, whitSunday);
+        }
+
+        function getConfiguredHolidayCountry() {
+            const code = String(state?.holidayCountry || 'SI').toUpperCase();
+            return EUROPEAN_COUNTRIES.some(country => country.code === code) ? code : 'SI';
+        }
+
+        function getCountryName(code = getConfiguredHolidayCountry()) {
+            return EUROPEAN_COUNTRIES.find(country => country.code === code)?.name || code;
+        }
+
+        function holidayCacheKey(countryCode, year) {
+            return `paysmart_holidays_v1_${countryCode}_${year}`;
+        }
+
+        function readHolidayCache(countryCode, year) {
+            const memoryKey = `${countryCode}-${year}`;
+            if (holidayDatesByCountryYear.has(memoryKey)) return holidayDatesByCountryYear.get(memoryKey);
+
+            try {
+                const raw = localStorage.getItem(holidayCacheKey(countryCode, year));
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                if (!Array.isArray(parsed?.dates)) return null;
+                const dates = new Set(parsed.dates);
+                holidayDatesByCountryYear.set(memoryKey, dates);
+                return { dates, fetchedAt: Number(parsed.fetchedAt || 0), stale: Date.now() - Number(parsed.fetchedAt || 0) > HOLIDAY_CACHE_MAX_AGE_MS };
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function writeHolidayCache(countryCode, year, dates) {
+            const memoryKey = `${countryCode}-${year}`;
+            const set = dates instanceof Set ? dates : new Set(dates || []);
+            holidayDatesByCountryYear.set(memoryKey, set);
+            try {
+                localStorage.setItem(holidayCacheKey(countryCode, year), JSON.stringify({
+                    fetchedAt: Date.now(),
+                    dates: [...set]
+                }));
+            } catch (_) {}
+            return set;
+        }
+
+        function addDateRangeToSet(set, startDate, endDate) {
+            if (!startDate) return;
+            const start = new Date(`${startDate}T12:00:00`);
+            const end = new Date(`${endDate || startDate}T12:00:00`);
+            if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return;
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                set.add(formatDateISO(d));
+            }
+        }
+
+        async function fetchNationalHolidaysOpenHolidays(countryCode, year) {
+            const params = new URLSearchParams({
+                countryIsoCode: countryCode,
+                languageIsoCode: 'EN',
+                validFrom: `${year}-01-01`,
+                validTo: `${year}-12-31`
+            });
+            const response = await fetch(`${OPEN_HOLIDAYS_API}?${params.toString()}`, { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error(`OpenHolidays ${response.status}`);
+            const holidays = await response.json();
+            if (!Array.isArray(holidays)) throw new Error('Invalid OpenHolidays response');
+
+            const dates = new Set();
+            holidays
+                .filter(holiday => holiday?.nationwide === true && holiday?.type !== 'Optional')
+                .forEach(holiday => addDateRangeToSet(dates, holiday.startDate, holiday.endDate));
+            return dates;
+        }
+
+        async function fetchNationalHolidaysNager(countryCode, year) {
+            const response = await fetch(`${NAGER_V3_API}/${year}/${countryCode}`);
+            if (!response.ok) throw new Error(`Nager.Date ${response.status}`);
+            const holidays = await response.json();
+            if (!Array.isArray(holidays)) throw new Error('Invalid Nager.Date response');
+
+            const dates = new Set();
+            holidays
+                .filter(holiday => holiday?.global === true && (!Array.isArray(holiday.types) || holiday.types.includes('Public') || holiday.types.includes('Bank')))
+                .forEach(holiday => { if (holiday?.date) dates.add(holiday.date); });
+            return dates;
+        }
+
+        async function loadHolidayYear(countryCode, year, { force = false } = {}) {
+            const cached = readHolidayCache(countryCode, year);
+            if (cached && !force && cached.stale === false) return cached.dates;
+            if (cached instanceof Set && !force) return cached;
+
+            try {
+                const dates = await fetchNationalHolidaysOpenHolidays(countryCode, year);
+                return writeHolidayCache(countryCode, year, dates);
+            } catch (openError) {
+                try {
+                    const dates = await fetchNationalHolidaysNager(countryCode, year);
+                    return writeHolidayCache(countryCode, year, dates);
+                } catch (nagerError) {
+                    if (cached?.dates instanceof Set) return cached.dates;
+                    if (cached instanceof Set) return cached;
+                    if (countryCode === 'SI') {
+                        const fallback = new Set();
+                        for (let month = 0; month < 12; month++) {
+                            const days = new Date(year, month + 1, 0).getDate();
+                            for (let day = 1; day <= days; day++) {
+                                const d = new Date(year, month, day);
+                                if (isSlovenianHoliday(d)) fallback.add(formatDateISO(d));
+                            }
+                        }
+                        return writeHolidayCache(countryCode, year, fallback);
+                    }
+                    console.warn(`Holiday calendar unavailable for ${countryCode} ${year}`, openError, nagerError);
+                    return null;
+                }
+            }
+        }
+
+        function getHolidayYearsNeeded() {
+            const currentYear = new Date().getFullYear();
+            const years = new Set([currentYear - 1, currentYear, currentYear + 1]);
+            for (const income of (state?.incomes || [])) {
+                const y = Number.parseInt(String(income?.date || '').slice(0, 4), 10);
+                if (Number.isInteger(y)) {
+                    years.add(y - 1);
+                    years.add(y);
+                    years.add(y + 1);
+                }
+            }
+            return [...years].sort((a, b) => a - b);
+        }
+
+        async function ensureHolidayCalendarsForState(countryCode = getConfiguredHolidayCountry(), { forceCurrentYears = false } = {}) {
+            const years = getHolidayYearsNeeded();
+            holidayCalendarLoadError = false;
+            const currentYear = new Date().getFullYear();
+            const results = await Promise.all(years.map(year =>
+                loadHolidayYear(countryCode, year, { force: forceCurrentYears && Math.abs(year - currentYear) <= 1 })
+            ));
+            const requiredCurrentIndexes = years
+                .map((year, index) => ({ year, index }))
+                .filter(item => Math.abs(item.year - currentYear) <= 1);
+            const currentRangeReady = requiredCurrentIndexes.every(item => results[item.index] instanceof Set);
+            holidayCalendarLoadError = !currentRangeReady;
+            return currentRangeReady;
+        }
+
+        function isConfiguredNationalHoliday(date) {
+            const countryCode = getConfiguredHolidayCountry();
+            const key = `${countryCode}-${date.getFullYear()}`;
+            const set = holidayDatesByCountryYear.get(key);
+            if (set instanceof Set) return set.has(formatDateISO(date));
+            return countryCode === 'SI' ? isSlovenianHoliday(date) : false;
         }
 
         function getConfiguredPaydayDay() {
@@ -1817,7 +2084,7 @@
 
         function getAdjustedPayday(year, month) {
             const d = getNominalPayday(year, month);
-            while (d.getDay() === 0 || d.getDay() === 6 || isSlovenianHoliday(d)) {
+            while (d.getDay() === 0 || d.getDay() === 6 || isConfiguredNationalHoliday(d)) {
                 d.setDate(d.getDate() + 1);
             }
             return d;
@@ -1888,9 +2155,15 @@
             const displayEl = document.getElementById('payday-date-display');
             if (displayEl) displayEl.innerText = nextPayday.toLocaleDateString('en-US', options);
 
+            const countryName = getCountryName();
+            const countryBadge = document.getElementById('payday-country-badge');
+            if (countryBadge) countryBadge.innerHTML = `<i class="fa-solid fa-business-time"></i> Payday Rule Active · ${countryName}`;
+
             const scheduleDescription = document.getElementById('payday-schedule-description');
             if (scheduleDescription) {
-                scheduleDescription.innerText = `Salary schedule: day ${configuredDay} of every month. If that day does not exist, the last calendar day is used. Weekends and Slovenian national holidays shift payday to the next working day.`;
+                scheduleDescription.innerText = holidayCalendarLoadError
+                    ? `Salary schedule: day ${configuredDay}. Weekend rules are active, but the ${countryName} holiday calendar could not be refreshed. Cached holiday data will be used where available.`
+                    : `Salary schedule: day ${configuredDay} of every month. If that day does not exist, the last calendar day is used. Weekends and nationwide public holidays in ${countryName} shift payday to the next working day.`;
             }
 
             const diffTime = nextPayday - today;
@@ -1903,16 +2176,16 @@
                 const shorterMonth = nominalPayday.getDate() !== configuredDay;
                 const movedForWorkingDay = nextPayday.getTime() !== nominalPayday.getTime();
                 const wasWeekend = nominalPayday.getDay() === 0 || nominalPayday.getDay() === 6;
-                const wasHoliday = isSlovenianHoliday(nominalPayday);
+                const wasHoliday = isConfiguredNationalHoliday(nominalPayday);
 
                 if (shorterMonth && movedForWorkingDay) {
                     noteEl.innerText = `Day ${configuredDay} unavailable → month end → next working day`;
                 } else if (shorterMonth) {
                     noteEl.innerText = `Day ${configuredDay} unavailable → using month end`;
                 } else if (movedForWorkingDay && wasWeekend && wasHoliday) {
-                    noteEl.innerText = 'Postponed: Weekend & SI Holiday';
+                    noteEl.innerText = `Postponed: Weekend & ${getCountryName()} Holiday`;
                 } else if (movedForWorkingDay && wasHoliday) {
-                    noteEl.innerText = 'Postponed: Slovenian National Holiday';
+                    noteEl.innerText = `Postponed: ${getCountryName()} National Holiday`;
                 } else if (movedForWorkingDay && wasWeekend) {
                     noteEl.innerText = 'Postponed: Weekend';
                 } else {
