@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PaySmart - Financial Planner & Recurring Expense Tracker</title>
-    <meta name="theme-color" content="#16a34a">
+    <meta name="theme-color" content="#0f766e">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -74,6 +74,211 @@
             }
             .mobile-kpi-card { min-width: 0; }
         }
+
+        /* PaySmart 2.0 — Clean Banking UI */
+        :root {
+            --ps-bg: #f6f8fb;
+            --ps-surface: rgba(255, 255, 255, 0.94);
+            --ps-border: #e7ecf2;
+            --ps-text: #0f172a;
+            --ps-muted: #64748b;
+            --ps-emerald: #059669;
+            --ps-teal: #0f766e;
+            --ps-blue: #2563eb;
+            --ps-amber: #d97706;
+            --ps-violet: #7c3aed;
+        }
+
+        body {
+            background-color: var(--ps-bg) !important;
+            background-image:
+                radial-gradient(circle at 8% 0%, rgba(16, 185, 129, 0.07), transparent 27rem),
+                radial-gradient(circle at 92% 8%, rgba(14, 116, 144, 0.05), transparent 24rem);
+        }
+        .dark body {
+            background-color: #0b1120 !important;
+            background-image:
+                radial-gradient(circle at 8% 0%, rgba(16, 185, 129, 0.08), transparent 28rem),
+                radial-gradient(circle at 92% 8%, rgba(37, 99, 235, 0.06), transparent 24rem);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.92);
+            border-color: rgba(226, 232, 240, 0.88);
+            box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02);
+        }
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.92);
+            border-color: rgba(51, 65, 85, 0.76);
+        }
+
+        .ps-brand-icon {
+            box-shadow: 0 8px 22px rgba(5, 150, 105, 0.18);
+        }
+
+        .ps-payday-card {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 52%, #0f766e 100%) !important;
+            border: 1px solid rgba(255,255,255,0.14);
+            box-shadow: 0 20px 45px rgba(6, 78, 59, 0.16);
+        }
+
+        .ps-control-bar {
+            background: rgba(255,255,255,0.82);
+            border: 1px solid var(--ps-border);
+            box-shadow: 0 8px 22px rgba(15,23,42,0.04);
+        }
+        .dark .ps-control-bar {
+            background: rgba(15,23,42,0.72);
+            border-color: #253146;
+        }
+        .ps-control {
+            background: #ffffff !important;
+            border-color: #e6ebf1 !important;
+            box-shadow: none !important;
+        }
+        .dark .ps-control {
+            background: #111827 !important;
+            border-color: #263246 !important;
+        }
+
+        .ps-kpi {
+            position: relative;
+            overflow: hidden;
+            background: var(--ps-surface) !important;
+            border: 1px solid var(--ps-border) !important;
+            box-shadow: 0 10px 26px rgba(15,23,42,0.045) !important;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .ps-kpi:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 32px rgba(15,23,42,0.065) !important;
+        }
+        .dark .ps-kpi {
+            background: rgba(17,24,39,0.88) !important;
+            border-color: #263246 !important;
+            box-shadow: none !important;
+        }
+        .ps-kpi::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            border-radius: 1rem 0 0 1rem;
+            background: var(--kpi-accent, #10b981);
+            opacity: .9;
+        }
+        .ps-kpi-income { --kpi-accent: #10b981; }
+        .ps-kpi-savings { --kpi-accent: #3b82f6; }
+        .ps-kpi-recurring { --kpi-accent: #f59e0b; }
+        .ps-kpi-disposable { --kpi-accent: #8b5cf6; }
+
+        .ps-metric-track {
+            height: 4px;
+            border-radius: 999px;
+            background: #eef2f7;
+            overflow: hidden;
+            margin-top: .75rem;
+        }
+        .dark .ps-metric-track { background: #243044; }
+        .ps-metric-fill {
+            height: 100%;
+            width: 0;
+            border-radius: inherit;
+            transition: width .45s ease;
+        }
+        .ps-fill-income { background: linear-gradient(90deg,#10b981,#059669); }
+        .ps-fill-savings { background: linear-gradient(90deg,#60a5fa,#2563eb); }
+        .ps-fill-recurring { background: linear-gradient(90deg,#fbbf24,#d97706); }
+        .ps-fill-disposable { background: linear-gradient(90deg,#a78bfa,#7c3aed); }
+
+        .ps-weekly-card {
+            background: linear-gradient(145deg, #111827 0%, #172033 55%, #0f2927 100%) !important;
+            border-color: rgba(51,65,85,.88) !important;
+            box-shadow: 0 12px 28px rgba(15,23,42,.12) !important;
+        }
+
+        .ps-panel {
+            background: rgba(255,255,255,0.94) !important;
+            border: 1px solid var(--ps-border) !important;
+            box-shadow: 0 10px 28px rgba(15,23,42,0.045) !important;
+        }
+        .dark .ps-panel {
+            background: rgba(17,24,39,0.90) !important;
+            border-color: #263246 !important;
+            box-shadow: none !important;
+        }
+
+        .ps-summary-panel {
+            min-height: 100%;
+        }
+        .ps-summary-heading {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+        }
+        .ps-summary-heading::before {
+            content: '';
+            width: .55rem;
+            height: .55rem;
+            border-radius: 999px;
+            background: var(--summary-accent, #10b981);
+            box-shadow: 0 0 0 5px color-mix(in srgb, var(--summary-accent, #10b981) 12%, transparent);
+        }
+        .ps-summary-savings { --summary-accent: #3b82f6; }
+        .ps-summary-recurring { --summary-accent: #f59e0b; }
+
+        .ps-list-row {
+            background: #f8fafc !important;
+            border: 1px solid #edf1f5;
+            transition: border-color .16s ease, transform .16s ease, background .16s ease;
+        }
+        .ps-list-row:hover {
+            background: #ffffff !important;
+            border-color: #dde5ed;
+            transform: translateY(-1px);
+        }
+        .dark .ps-list-row {
+            background: rgba(15,23,42,.58) !important;
+            border-color: #263246;
+        }
+        .dark .ps-list-row:hover { background: rgba(30,41,59,.76) !important; }
+
+        .ps-percentage-pill {
+            letter-spacing: .01em;
+            border: 1px solid currentColor;
+            border-color: color-mix(in srgb, currentColor 16%, transparent);
+        }
+
+        .ps-section-link {
+            padding: .45rem .7rem;
+            border-radius: .65rem;
+            text-decoration: none !important;
+            transition: background .16s ease;
+        }
+        .ps-section-link:hover { background: rgba(16,185,129,.08); }
+
+        /* Carry the same surface language through all functional tabs and generated cards. */
+        main [class~="bg-white"][class~="dark:bg-slate-800"] {
+            border-color: var(--ps-border);
+            box-shadow: 0 8px 24px rgba(15,23,42,0.035);
+        }
+        .dark main [class~="bg-white"][class~="dark:bg-slate-800"] {
+            border-color: #263246;
+            box-shadow: none;
+        }
+
+        input, select {
+            transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+        }
+        input:focus, select:focus {
+            box-shadow: 0 0 0 3px rgba(16,185,129,.12) !important;
+        }
+
+        @media (max-width: 767px) {
+            .ps-payday-card { border-radius: 1.15rem; }
+            .ps-kpi { border-radius: 1rem; }
+            .ps-panel { border-radius: 1.1rem; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full font-sans antialiased flex flex-col transition-colors duration-200">
@@ -83,16 +288,14 @@
             <div class="flex items-center justify-between h-16 gap-2">
                 <!-- Brand -->
                 <div class="flex items-center gap-2.5 cursor-pointer min-w-0 shrink" onclick="switchTab('dashboard')">
-                    <div class="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
-                        <i class="fa-solid fa-wallet text-lg sm:text-xl"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <span class="font-bold text-base sm:text-lg leading-tight block truncate">PaySmart</span>                        
+                    <img src="paysmart-icon.png" alt="PaySmart" class="ps-brand-icon w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl object-cover">
+                    <div class="min-w-0 flex items-center">
+                        <span class="font-extrabold text-base sm:text-lg tracking-tight leading-tight block truncate">PaySmart</span>
                     </div>
                 </div>
 
                 <!-- Desktop Navigation -->
-                <nav class="hidden md:flex space-x-1 mx-auto">
+                <nav class="hidden md:flex space-x-1 mx-auto bg-slate-50/80 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200/80 dark:border-slate-700/70">
                     <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-400">
                         <i class="fa-solid fa-chart-pie"></i> Overview
                     </button>
@@ -179,7 +382,7 @@
         <div id="tab-dashboard" class="tab-content space-y-4 sm:space-y-6">
             
             <!-- Payday Rule Alert Card -->
-            <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white rounded-2xl p-4 sm:p-6 shadow-xl shadow-emerald-900/10 relative overflow-hidden">
+            <div class="ps-payday-card text-white rounded-2xl p-4 sm:p-6 relative overflow-hidden">
                 <div class="absolute -right-6 -bottom-6 opacity-10 text-9xl">
                     <i class="fa-solid fa-calendar-check"></i>
                 </div>
@@ -212,15 +415,15 @@
                     <h1 class="text-2xl font-bold tracking-tight">Financial Overview</h1>
                     <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">Finances calculated strictly between salary paydays.</p>
                 </div>
-                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <div class="flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full sm:w-auto" title="Your preferred salary day. Weekends and Slovenian national holidays are automatically moved to the next working day.">
+                <div class="ps-control-bar flex flex-col sm:flex-row gap-2 w-full sm:w-auto p-1.5 rounded-2xl">
+                    <div class="ps-control flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full sm:w-auto" title="Your preferred salary day. Weekends and Slovenian national holidays are automatically moved to the next working day.">
                         <i class="fa-solid fa-money-check-dollar text-emerald-500 ml-2"></i>
                         <span class="text-[10px] uppercase tracking-wide font-bold text-slate-400 whitespace-nowrap">Payday</span>
                         <select id="payday-day-selector" onchange="changePaydayDay(this.value)" class="bg-transparent text-xs sm:text-sm font-bold focus:outline-none pr-2 min-w-[78px]">
                             <!-- Populated by JS -->
                         </select>
                     </div>
-                    <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full sm:w-fit">
+                    <div class="ps-control flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full sm:w-fit">
                         <i class="fa-solid fa-calendar-days text-emerald-500 ml-2"></i>
                         <select id="cycle-selector" onchange="changePayPeriodView(this.value)" class="bg-transparent text-xs sm:text-sm font-bold focus:outline-none pr-2 flex-1 min-w-0">
                             <!-- Populated by JS -->
@@ -231,7 +434,7 @@
 
             <!-- Metric KPI Cards -->
             <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-                <div class="mobile-kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="mobile-kpi-card ps-kpi ps-kpi-income bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold uppercase text-slate-400">Cycle Income</span>
                         <div class="flex items-center gap-1.5">
@@ -244,10 +447,11 @@
                         </div>
                     </div>
                     <div class="text-xl sm:text-2xl font-bold" id="dash-income">€0.00</div>
-                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Salary received for cycle</div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Income received during selected cycle</div>
+                    <div class="ps-metric-track"><div id="dash-income-bar" class="ps-metric-fill ps-fill-income"></div></div>
                 </div>
 
-                <div class="mobile-kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="mobile-kpi-card ps-kpi ps-kpi-savings bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold uppercase text-slate-400">Auto Savings</span>
                         <div class="p-2 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-lg">
@@ -256,12 +460,13 @@
                     </div>
                     <div class="flex items-baseline gap-2 flex-wrap">
                         <div class="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400" id="dash-savings">€995.00</div>
-                        <span id="dash-savings-pct" class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">—</span>
+                        <span id="dash-savings-pct" class="ps-percentage-pill text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">—</span>
                     </div>
                     <div id="dash-savings-subtitle" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate" title="">Monthly savings goals</div>
+                    <div class="ps-metric-track"><div id="dash-savings-bar" class="ps-metric-fill ps-fill-savings"></div></div>
                 </div>
 
-                <div class="mobile-kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="mobile-kpi-card ps-kpi ps-kpi-recurring bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold uppercase text-slate-400">Recurring Bills</span>
                         <div class="p-2 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-lg">
@@ -270,12 +475,13 @@
                     </div>
                     <div class="flex items-baseline gap-2 flex-wrap">
                         <div class="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400" id="dash-recurring-total">€0.00</div>
-                        <span id="dash-recurring-pct" class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">—</span>
+                        <span id="dash-recurring-pct" class="ps-percentage-pill text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">—</span>
                     </div>
-                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Active recurring rules</div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Active recurring commitments</div>
+                    <div class="ps-metric-track"><div id="dash-recurring-bar" class="ps-metric-fill ps-fill-recurring"></div></div>
                 </div>
 
-                <div class="mobile-kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="mobile-kpi-card ps-kpi ps-kpi-disposable bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-semibold uppercase text-slate-400">Disposable Pool</span>
                         <div class="p-2 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-lg">
@@ -284,12 +490,13 @@
                     </div>
                     <div class="flex items-baseline gap-2 flex-wrap">
                         <div class="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400" id="dash-disposable">€0.00</div>
-                        <span id="dash-disposable-pct" class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">—</span>
+                        <span id="dash-disposable-pct" class="ps-percentage-pill text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">—</span>
                     </div>
-                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Income - Savings - Fixed Bills</div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Income remaining after savings and recurring bills</div>
+                    <div class="ps-metric-track"><div id="dash-disposable-bar" class="ps-metric-fill ps-fill-disposable"></div></div>
                 </div>
 
-                <div class="mobile-kpi-card col-span-2 lg:col-span-1 bg-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-800">
+                <div class="mobile-kpi-card ps-weekly-card col-span-2 lg:col-span-1 bg-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-800">
                     <div class="flex items-center justify-between mb-2 opacity-90">
                         <span class="text-xs font-semibold uppercase text-emerald-400">Weekly Target</span>
                         <div class="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg">
@@ -302,7 +509,7 @@
             </div>
 
             <!-- Salary History & Average KPI Card -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+            <div class="ps-panel bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700/60 pb-3">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg">
@@ -337,7 +544,7 @@
             </div>
 
             <!-- Weekly Allowance Progress Card -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div class="ps-panel bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                     <div>
                         <h3 class="font-bold text-lg">Active Week Allowance Progress</h3>
@@ -363,7 +570,7 @@
 
             <!-- Charts Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="ps-panel bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <h3 class="font-bold text-lg mb-1">Budget Allocation Breakdown</h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Savings target vs. fixed recurring vs. variable spent in pay cycle.</p>
                     <div class="relative h-64 w-full flex items-center justify-center">
@@ -371,7 +578,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="ps-panel bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <h3 class="font-bold text-lg mb-1">Weekly Expense Progression</h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Total recorded expenses grouped by 4 weekly blocks of the pay cycle.</p>
                     <div class="relative h-64 w-full">
@@ -382,18 +589,18 @@
 
             <!-- Pockets & Recurring Summaries -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-lg">Automated Monthly Savings Target</h3>
-                        <button onclick="switchTab('pockets')" class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">Manage Goals &rarr;</button>
+                <div class="ps-panel ps-summary-panel ps-summary-savings bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center mb-4 gap-3">
+                        <h3 class="ps-summary-heading font-bold text-base sm:text-lg">Automated Monthly Savings Target</h3>
+                        <button onclick="switchTab('pockets')" class="ps-section-link text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Manage Goals &rarr;</button>
                     </div>
                     <div class="space-y-3" id="dash-pockets-list"></div>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-lg">Active Recurring Commitments</h3>
-                        <button onclick="switchTab('recurring')" class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">View Rules &rarr;</button>
+                <div class="ps-panel ps-summary-panel ps-summary-recurring bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center mb-4 gap-3">
+                        <h3 class="ps-summary-heading font-bold text-base sm:text-lg">Active Recurring Commitments</h3>
+                        <button onclick="switchTab('recurring')" class="ps-section-link text-xs text-emerald-600 dark:text-emerald-400 font-semibold">View Rules &rarr;</button>
                     </div>
                     <div class="space-y-3" id="dash-recurring-list"></div>
                 </div>
@@ -402,7 +609,7 @@
 
         <!-- TAB 2: LOG TRANSACTION ENTRY -->
         <div id="tab-log" class="tab-content hidden space-y-6">
-            <div class="max-w-2xl mx-auto bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div class="ps-panel max-w-2xl mx-auto bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
                 
                 <div class="flex border-b border-slate-200 dark:border-slate-700 mb-6">
                     <button id="subtab-btn-expense" onclick="switchLogSubtab('expense')" class="flex-1 pb-3 text-center font-bold text-sm border-b-2 border-emerald-500 text-emerald-600 dark:text-emerald-400">
@@ -1782,6 +1989,17 @@
             return `${((Number(amount) / income) * 100).toFixed(1)}%`;
         }
 
+        function updateMetricProgress(id, amount, totalIncome) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const income = Number(totalIncome);
+            const value = Number(amount);
+            const pct = Number.isFinite(income) && income > 0 && Number.isFinite(value)
+                ? Math.max(0, Math.min(100, (value / income) * 100))
+                : 0;
+            el.style.width = `${pct}%`;
+        }
+
         function getSelectedCycleIncome() {
             const period = activePayPeriods?.[state.selectedCycleIndex];
             if (!period) return 0;
@@ -1875,6 +2093,10 @@
             if (document.getElementById('dash-savings-pct')) document.getElementById('dash-savings-pct').innerText = formatIncomePercentage(metrics.totalSavingsTarget, metrics.totalIncome);
             if (document.getElementById('dash-recurring-pct')) document.getElementById('dash-recurring-pct').innerText = formatIncomePercentage(metrics.totalRecurring, metrics.totalIncome);
             if (document.getElementById('dash-disposable-pct')) document.getElementById('dash-disposable-pct').innerText = formatIncomePercentage(metrics.disposableMonthlyBudget, metrics.totalIncome);
+            updateMetricProgress('dash-income-bar', metrics.totalIncome, metrics.totalIncome);
+            updateMetricProgress('dash-savings-bar', metrics.totalSavingsTarget, metrics.totalIncome);
+            updateMetricProgress('dash-recurring-bar', metrics.totalRecurring, metrics.totalIncome);
+            updateMetricProgress('dash-disposable-bar', metrics.disposableMonthlyBudget, metrics.totalIncome);
             if (document.getElementById('dash-weekly-budget')) document.getElementById('dash-weekly-budget').innerText = `€${metrics.weeklyBudget.toFixed(2)} / wk`;
 
             const remWeekly = metrics.weeklyBudget - metrics.currentWeekExpenses;
@@ -1961,7 +2183,7 @@
 
             if (container) {
                 container.innerHTML = state.pockets.map(pocket => `
-                    <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
+                    <div class="ps-list-row flex items-center justify-between gap-3 p-3 rounded-xl">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs">
                                 <i class="fa-solid ${pocket.icon}"></i>
@@ -2074,7 +2296,7 @@
                     dashList.innerHTML = `<p class="text-xs text-slate-400 py-2">No recurring expenses set.</p>`;
                 } else {
                     dashList.innerHTML = state.recurring.slice(0, 4).map(r => `
-                        <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
+                        <div class="ps-list-row flex items-center justify-between gap-3 p-3 rounded-xl">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs">
                                     <i class="fa-solid fa-rotate"></i>
