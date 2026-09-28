@@ -190,8 +190,8 @@
                             <i class="fa-solid fa-business-time"></i> Payday Rule Active (Slovenia)
                         </div>
                         <h2 class="text-xl sm:text-3xl font-extrabold tracking-tight">Next Payday: <span id="payday-date-display" class="underline decoration-teal-300">Loading...</span></h2>
-                        <p class="text-xs sm:text-sm text-emerald-100 max-w-xl">
-                            Salary schedule: 15th of every month. If the 15th falls on a weekend or Slovenian holiday, payday automatically shifts to the first working day.
+                        <p id="payday-schedule-description" class="text-xs sm:text-sm text-emerald-100 max-w-xl">
+                            Salary schedule: day 15 of every month. If the scheduled day falls on a weekend or Slovenian holiday, payday automatically shifts to the first working day.
                         </p>
                     </div>
                     <div class="bg-white/10 dark:bg-slate-900/30 backdrop-blur-md border border-white/20 p-3 sm:p-4 rounded-xl flex items-center gap-3 sm:gap-4 w-full md:w-auto md:min-w-[230px]">
@@ -213,11 +213,20 @@
                     <h1 class="text-2xl font-bold tracking-tight">Financial Overview</h1>
                     <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">Finances calculated strictly between salary paydays.</p>
                 </div>
-                <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full sm:w-fit">
-                    <i class="fa-solid fa-calendar-days text-emerald-500 ml-2"></i>
-                    <select id="cycle-selector" onchange="changePayPeriodView(this.value)" class="bg-transparent text-xs sm:text-sm font-bold focus:outline-none pr-2 flex-1 min-w-0">
-                        <!-- Populated by JS -->
-                    </select>
+                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <div class="flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full sm:w-auto" title="Your preferred salary day. Weekends and Slovenian national holidays are automatically moved to the next working day.">
+                        <i class="fa-solid fa-money-check-dollar text-emerald-500 ml-2"></i>
+                        <span class="text-[10px] uppercase tracking-wide font-bold text-slate-400 whitespace-nowrap">Payday</span>
+                        <select id="payday-day-selector" onchange="changePaydayDay(this.value)" class="bg-transparent text-xs sm:text-sm font-bold focus:outline-none pr-2 min-w-[78px]">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full sm:w-fit">
+                        <i class="fa-solid fa-calendar-days text-emerald-500 ml-2"></i>
+                        <select id="cycle-selector" onchange="changePayPeriodView(this.value)" class="bg-transparent text-xs sm:text-sm font-bold focus:outline-none pr-2 flex-1 min-w-0">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -246,7 +255,10 @@
                             <i class="fa-solid fa-vault"></i>
                         </div>
                     </div>
-                    <div class="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400" id="dash-savings">€995.00</div>
+                    <div class="flex items-baseline gap-2 flex-wrap">
+                        <div class="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400" id="dash-savings">€995.00</div>
+                        <span id="dash-savings-pct" class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">—</span>
+                    </div>
                     <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Personal, Wife, Car, Cats, Tennis</div>
                 </div>
 
@@ -257,7 +269,10 @@
                             <i class="fa-solid fa-rotate"></i>
                         </div>
                     </div>
-                    <div class="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400" id="dash-recurring-total">€0.00</div>
+                    <div class="flex items-baseline gap-2 flex-wrap">
+                        <div class="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400" id="dash-recurring-total">€0.00</div>
+                        <span id="dash-recurring-pct" class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">—</span>
+                    </div>
                     <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Active recurring rules</div>
                 </div>
 
@@ -268,7 +283,10 @@
                             <i class="fa-solid fa-bag-shopping"></i>
                         </div>
                     </div>
-                    <div class="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400" id="dash-disposable">€0.00</div>
+                    <div class="flex items-baseline gap-2 flex-wrap">
+                        <div class="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400" id="dash-disposable">€0.00</div>
+                        <span id="dash-disposable-pct" class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">—</span>
+                    </div>
                     <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Income - Savings - Fixed Bills</div>
                 </div>
 
@@ -963,7 +981,8 @@
                 recurring: structuredClone(DEFAULT_RECURRING),
                 incomes: [],
                 expenses: [],
-                selectedCycleIndex: 0
+                selectedCycleIndex: 0,
+                paydayDay: 15
             };
         }
 
@@ -1241,6 +1260,8 @@
             if (!Array.isArray(loadedState.pockets)) loadedState.pockets = structuredClone(DEFAULT_POCKETS);
             if (!Array.isArray(loadedState.recurring)) loadedState.recurring = structuredClone(DEFAULT_RECURRING);
             if (!Number.isInteger(loadedState.selectedCycleIndex)) loadedState.selectedCycleIndex = 0;
+            const loadedPaydayDay = Number.parseInt(loadedState.paydayDay, 10);
+            loadedState.paydayDay = Number.isInteger(loadedPaydayDay) && loadedPaydayDay >= 1 && loadedPaydayDay <= 31 ? loadedPaydayDay : 15;
             return loadedState;
         }
 
@@ -1461,6 +1482,21 @@
         }
 
         function initCycleSelector() {
+            // Rebuild cycles from this user's saved payday preference.
+            activePayPeriods = generatePayPeriods(6);
+
+            if (!Number.isInteger(state.selectedCycleIndex) || state.selectedCycleIndex < 0 || state.selectedCycleIndex >= activePayPeriods.length) {
+                state.selectedCycleIndex = getCurrentPeriodIndex();
+            }
+
+            const paydaySelector = document.getElementById('payday-day-selector');
+            if (paydaySelector) {
+                paydaySelector.innerHTML = Array.from({ length: 31 }, (_, i) => {
+                    const day = i + 1;
+                    return `<option value="${day}" ${day === getConfiguredPaydayDay() ? 'selected' : ''}>Day ${day}</option>`;
+                }).join('');
+            }
+
             const selector = document.getElementById('cycle-selector');
             if (!selector) return;
 
@@ -1473,7 +1509,21 @@
 
         function changePayPeriodView(index) {
             state.selectedCycleIndex = parseInt(index);
+            saveToLocalStorage();
             renderAll();
+        }
+
+        function changePaydayDay(value) {
+            const day = Number.parseInt(value, 10);
+            if (!Number.isInteger(day) || day < 1 || day > 31) return;
+
+            state.paydayDay = day;
+            activePayPeriods = generatePayPeriods(6);
+            state.selectedCycleIndex = getCurrentPeriodIndex();
+            initCycleSelector();
+            saveToLocalStorage();
+            renderAll();
+            showToast(`Payday changed to day ${day}. Cycles were recalculated.`);
         }
 
         // --- SLOVENIAN NATIONAL HOLIDAY & PAYDAY ENGINE ---
@@ -1524,8 +1574,19 @@
             return isSameDay(date, easterSunday) || isSameDay(date, easterMonday) || isSameDay(date, whitSunday);
         }
 
+        function getConfiguredPaydayDay() {
+            const day = Number.parseInt(state?.paydayDay, 10);
+            return Number.isInteger(day) && day >= 1 && day <= 31 ? day : 15;
+        }
+
+        function getNominalPayday(year, month) {
+            const configuredDay = getConfiguredPaydayDay();
+            const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+            return new Date(year, month, Math.min(configuredDay, lastDayOfMonth));
+        }
+
         function getAdjustedPayday(year, month) {
-            let d = new Date(year, month, 15);
+            const d = getNominalPayday(year, month);
             while (d.getDay() === 0 || d.getDay() === 6 || isSlovenianHoliday(d)) {
                 d.setDate(d.getDate() + 1);
             }
@@ -1580,39 +1641,52 @@
         function updatePaydayBanner() {
             const today = new Date();
             const todayStr = formatDateISO(today);
-            
-            let nextPayday = getAdjustedPayday(today.getFullYear(), today.getMonth());
+            const configuredDay = getConfiguredPaydayDay();
+
+            let targetYear = today.getFullYear();
+            let targetMonth = today.getMonth();
+            let nominalPayday = getNominalPayday(targetYear, targetMonth);
+            let nextPayday = getAdjustedPayday(targetYear, targetMonth);
+
             if (todayStr >= formatDateISO(nextPayday)) {
-                nextPayday = getAdjustedPayday(today.getFullYear(), today.getMonth() + 1);
+                targetMonth += 1;
+                nominalPayday = getNominalPayday(targetYear, targetMonth);
+                nextPayday = getAdjustedPayday(targetYear, targetMonth);
             }
 
             const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
             const displayEl = document.getElementById('payday-date-display');
             if (displayEl) displayEl.innerText = nextPayday.toLocaleDateString('en-US', options);
 
+            const scheduleDescription = document.getElementById('payday-schedule-description');
+            if (scheduleDescription) {
+                scheduleDescription.innerText = `Salary schedule: day ${configuredDay} of every month. If that day does not exist, the last calendar day is used. Weekends and Slovenian national holidays shift payday to the next working day.`;
+            }
+
             const diffTime = nextPayday - today;
             const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-            
             const countEl = document.getElementById('payday-countdown-days');
             if (countEl) countEl.innerText = `${diffDays} Day${diffDays === 1 ? '' : 's'}`;
 
-            const orig15th = new Date(nextPayday.getFullYear(), nextPayday.getMonth(), 15);
             const noteEl = document.getElementById('payday-rule-note');
-            
             if (noteEl) {
-                if (nextPayday.getTime() !== orig15th.getTime()) {
-                    const wasWeekend = orig15th.getDay() === 0 || orig15th.getDay() === 6;
-                    const wasHoliday = isSlovenianHoliday(orig15th);
+                const shorterMonth = nominalPayday.getDate() !== configuredDay;
+                const movedForWorkingDay = nextPayday.getTime() !== nominalPayday.getTime();
+                const wasWeekend = nominalPayday.getDay() === 0 || nominalPayday.getDay() === 6;
+                const wasHoliday = isSlovenianHoliday(nominalPayday);
 
-                    if (wasWeekend && wasHoliday) {
-                        noteEl.innerText = "Postponed: Weekend & SI Holiday";
-                    } else if (wasHoliday) {
-                        noteEl.innerText = "Postponed: Slovenian National Holiday";
-                    } else {
-                        noteEl.innerText = "Postponed: Weekend 15th";
-                    }
+                if (shorterMonth && movedForWorkingDay) {
+                    noteEl.innerText = `Day ${configuredDay} unavailable → month end → next working day`;
+                } else if (shorterMonth) {
+                    noteEl.innerText = `Day ${configuredDay} unavailable → using month end`;
+                } else if (movedForWorkingDay && wasWeekend && wasHoliday) {
+                    noteEl.innerText = 'Postponed: Weekend & SI Holiday';
+                } else if (movedForWorkingDay && wasHoliday) {
+                    noteEl.innerText = 'Postponed: Slovenian National Holiday';
+                } else if (movedForWorkingDay && wasWeekend) {
+                    noteEl.innerText = 'Postponed: Weekend';
                 } else {
-                    noteEl.innerText = "Standard 15th monthly schedule";
+                    noteEl.innerText = `Standard day ${configuredDay} monthly schedule`;
                 }
             }
         }
@@ -1681,6 +1755,20 @@
                 .reduce((sum, r) => sum + Number(r.amount), 0);
         }
 
+        function formatIncomePercentage(amount, totalIncome) {
+            const income = Number(totalIncome);
+            if (!Number.isFinite(income) || income <= 0) return '—';
+            return `${((Number(amount) / income) * 100).toFixed(1)}%`;
+        }
+
+        function getSelectedCycleIncome() {
+            const period = activePayPeriods?.[state.selectedCycleIndex];
+            if (!period) return 0;
+            return state.incomes
+                .filter(i => i.date >= period.startStr && i.date <= period.endStr)
+                .reduce((sum, i) => sum + Number(i.amount || 0), 0);
+        }
+
         function calculateCycleMetrics(period) {
             const periodIncomes = state.incomes.filter(i => i.date >= period.startStr && i.date <= period.endStr);
             const periodExpenses = state.expenses.filter(e => e.date >= period.startStr && e.date <= period.endStr);
@@ -1743,6 +1831,9 @@
             if (document.getElementById('pockets-total-target')) document.getElementById('pockets-total-target').innerText = `€${metrics.totalSavingsTarget.toFixed(2)}`;
             if (document.getElementById('income-rule-preview')) document.getElementById('income-rule-preview').innerText = `- €${metrics.totalSavingsTarget.toFixed(2)}`;
             if (document.getElementById('dash-disposable')) document.getElementById('dash-disposable').innerText = `€${metrics.disposableMonthlyBudget.toFixed(2)}`;
+            if (document.getElementById('dash-savings-pct')) document.getElementById('dash-savings-pct').innerText = formatIncomePercentage(metrics.totalSavingsTarget, metrics.totalIncome);
+            if (document.getElementById('dash-recurring-pct')) document.getElementById('dash-recurring-pct').innerText = formatIncomePercentage(metrics.totalRecurring, metrics.totalIncome);
+            if (document.getElementById('dash-disposable-pct')) document.getElementById('dash-disposable-pct').innerText = formatIncomePercentage(metrics.disposableMonthlyBudget, metrics.totalIncome);
             if (document.getElementById('dash-weekly-budget')) document.getElementById('dash-weekly-budget').innerText = `€${metrics.weeklyBudget.toFixed(2)} / wk`;
 
             const remWeekly = metrics.weeklyBudget - metrics.currentWeekExpenses;
@@ -1824,6 +1915,7 @@
         function renderPocketsList() {
             const container = document.getElementById('dash-pockets-list');
             const gridContainer = document.getElementById('pockets-grid');
+            const selectedIncome = getSelectedCycleIncome();
 
             if (container) {
                 container.innerHTML = state.pockets.map(pocket => `
@@ -1834,7 +1926,10 @@
                             </div>
                             <span class="text-xs sm:text-sm font-medium">${pocket.name}</span>
                         </div>
-                        <span class="font-bold text-sm">€${Number(pocket.amount).toFixed(2)}</span>
+                        <div class="text-right shrink-0">
+                            <span class="font-bold text-sm block">€${Number(pocket.amount).toFixed(2)}</span>
+                            <span class="text-[10px] font-semibold text-blue-600 dark:text-blue-400">${formatIncomePercentage(pocket.amount, selectedIncome)} of income</span>
+                        </div>
                     </div>
                 `).join('');
             }
@@ -1856,7 +1951,10 @@
                         </div>
                         <div class="border-t border-slate-100 dark:border-slate-700 pt-4 flex items-center justify-between">
                             <span class="text-xs text-slate-400 uppercase font-semibold">Monthly Goal</span>
-                            <span class="text-xl font-bold text-emerald-600 dark:text-emerald-400">€${Number(pocket.amount).toFixed(2)}</span>
+                            <div class="text-right">
+                                <span class="text-xl font-bold text-emerald-600 dark:text-emerald-400 block">€${Number(pocket.amount).toFixed(2)}</span>
+                                <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400">${formatIncomePercentage(pocket.amount, selectedIncome)} of income</span>
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -1927,6 +2025,7 @@
         function renderRecurringGrid() {
             const grid = document.getElementById('recurring-grid');
             const dashList = document.getElementById('dash-recurring-list');
+            const selectedIncome = getSelectedCycleIncome();
 
             if (dashList) {
                 if (state.recurring.length === 0) {
@@ -1943,7 +2042,10 @@
                                     <span class="text-[10px] text-slate-400">${r.freq} • ${r.endDate ? 'Ends ' + r.endDate : 'No end date'}</span>
                                 </div>
                             </div>
-                            <span class="font-bold text-sm">€${Number(r.amount).toFixed(2)}</span>
+                            <div class="text-right shrink-0">
+                                <span class="font-bold text-sm block">€${Number(r.amount).toFixed(2)}</span>
+                                <span class="text-[10px] font-semibold text-amber-600 dark:text-amber-400">${formatIncomePercentage(r.amount, selectedIncome)} of income</span>
+                            </div>
                         </div>
                     `).join('');
                 }
@@ -1991,7 +2093,10 @@
                             </div>
                             <div class="border-t border-slate-100 dark:border-slate-700 pt-4 mt-4 flex items-center justify-between">
                                 <span class="text-xs text-slate-400 uppercase font-semibold">Cost per cycle</span>
-                                <span class="text-xl font-bold text-amber-600 dark:text-amber-400">€${Number(r.amount).toFixed(2)}</span>
+                                <div class="text-right">
+                                    <span class="text-xl font-bold text-amber-600 dark:text-amber-400 block">€${Number(r.amount).toFixed(2)}</span>
+                                    <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400">${formatIncomePercentage(r.amount, selectedIncome)} of income</span>
+                                </div>
                             </div>
                         </div>
                     `).join('');
