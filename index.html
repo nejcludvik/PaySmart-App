@@ -88,6 +88,7 @@
                     </div>
                     <div class="min-w-0">
                         <span class="font-bold text-base sm:text-lg leading-tight block truncate">PaySmart</span>
+                        <span class="hidden sm:block text-xs text-slate-500 dark:text-slate-400 truncate">Payday Cycle Financial Planner</span>
                     </div>
                 </div>
 
@@ -966,13 +967,12 @@
         let cloudConflict = false;
         let appInitializedForUser = null;
 
-        // Generic defaults for new PaySmart users.
-        const DEFAULT_POCKETS = [
-            { id: 'general', name: 'General Savings', amount: 0, icon: 'fa-piggy-bank', desc: 'General monthly savings target.' },
-            { id: 'emergency', name: 'Emergency Fund', amount: 0, icon: 'fa-shield-heart', desc: 'Emergency reserve target.' }
-        ];
-
+        // New PaySmart users start with no savings pockets and no recurring commitments.
+        const DEFAULT_POCKETS = [];
         const DEFAULT_RECURRING = [];
+
+        // One-time cleanup flag for the two zero-value starter pockets used in an earlier PaySmart version.
+        let legacyStarterPocketsRemoved = false;
 
         function createEmptyState() {
             return {
@@ -1258,6 +1258,18 @@
             if (!Array.isArray(loadedState.incomes)) loadedState.incomes = [];
             if (!Array.isArray(loadedState.pockets)) loadedState.pockets = structuredClone(DEFAULT_POCKETS);
             if (!Array.isArray(loadedState.recurring)) loadedState.recurring = structuredClone(DEFAULT_RECURRING);
+
+            // Remove only the untouched €0 starter pockets that were automatically created
+            // by an earlier multi-user build. User-created/edited pockets are preserved.
+            const beforePocketCount = loadedState.pockets.length;
+            loadedState.pockets = loadedState.pockets.filter(pocket => {
+                const amount = Number(pocket?.amount);
+                const isLegacyGeneral = pocket?.id === 'general' && pocket?.name === 'General Savings' && amount === 0;
+                const isLegacyEmergency = pocket?.id === 'emergency' && pocket?.name === 'Emergency Fund' && amount === 0;
+                return !(isLegacyGeneral || isLegacyEmergency);
+            });
+            if (loadedState.pockets.length !== beforePocketCount) legacyStarterPocketsRemoved = true;
+
             if (!Number.isInteger(loadedState.selectedCycleIndex)) loadedState.selectedCycleIndex = 0;
             const loadedPaydayDay = Number.parseInt(loadedState.paydayDay, 10);
             loadedState.paydayDay = Number.isInteger(loadedPaydayDay) && loadedPaydayDay >= 1 && loadedPaydayDay <= 31 ? loadedPaydayDay : 15;
@@ -1304,14 +1316,25 @@
                     return false;
                 }
 
+                legacyStarterPocketsRemoved = false;
                 const remoteState = normalizeLoadedState(result.data?.data || result.data);
+                const needsLegacyPocketCleanupSave = legacyStarterPocketsRemoved;
+                legacyStarterPocketsRemoved = false;
                 state = remoteState;
                 cloudLastKnownSha = result.sha || null;
                 cloudConflict = false;
                 saveToLocalStorage({ sync: false });
                 initCycleSelector();
                 renderAll();
-                updateSyncBadge('synced');
+
+                // Persist the one-time cleanup so existing users who received the old
+                // General Savings / Emergency Fund placeholders become truly empty too.
+                if (needsLegacyPocketCleanupSave) {
+                    await saveToCloud({ silent: true });
+                } else {
+                    updateSyncBadge('synced');
+                }
+
                 if (!silent) showToast('Loaded your latest PaySmart data.');
                 return true;
             } catch (err) {
@@ -1740,7 +1763,7 @@
                 saveToLocalStorage();
                 initCycleSelector();
                 renderAll();
-                showToast('PaySmart data reset to defaults.');
+                showToast('PaySmart data reset to empty data.');
             }
         }
 
