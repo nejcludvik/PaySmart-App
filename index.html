@@ -16,6 +16,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase: authentication + secure backend calls -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Font Inter -->
@@ -114,19 +116,19 @@
 
                 <!-- Sync and Utilities -->
                 <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                    <div id="sync-badge" title="GitHub sync status" class="h-9 sm:h-10 max-w-[82px] sm:max-w-[120px] px-2 sm:px-2.5 rounded-full text-[10px] sm:text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700">
+                    <div id="sync-badge" title="PaySmart cloud sync status" class="h-9 sm:h-10 max-w-[82px] sm:max-w-[120px] px-2 sm:px-2.5 rounded-full text-[10px] sm:text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700">
                         <span id="sync-indicator" class="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
                         <span id="sync-status-text" class="truncate">Local</span>
                     </div>
 
-                    <button onclick="manualSync()" title="Sync with GitHub" aria-label="Sync with GitHub" class="tap-target md:min-w-0 md:min-h-0 md:h-10 px-2.5 md:px-3 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-all flex items-center justify-center gap-2 text-xs font-semibold">
+                    <button onclick="manualSync()" title="Sync PaySmart data" aria-label="Sync PaySmart data" class="tap-target md:min-w-0 md:min-h-0 md:h-10 px-2.5 md:px-3 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-all flex items-center justify-center gap-2 text-xs font-semibold">
                         <i class="fa-solid fa-arrows-rotate"></i>
-                        <span class="hidden xl:inline">Sync GitHub</span>
+                        <span class="hidden xl:inline">Sync</span>
                     </button>
 
                     <div class="hidden md:flex items-center gap-1.5">
-                        <button onclick="openGitHubSettings()" title="GitHub sync settings" aria-label="GitHub settings" class="h-10 w-10 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center justify-center">
-                            <i class="fa-solid fa-gear"></i>
+                        <button onclick="openAccountModal()" title="Account" aria-label="Account" class="h-10 w-10 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center justify-center">
+                            <i class="fa-solid fa-user"></i>
                         </button>
                         <button onclick="exportJSON()" title="Export State to JSON" aria-label="Export JSON" class="h-10 w-10 rounded-xl border border-slate-200 dark:border-slate-800 text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center justify-center">
                             <i class="fa-solid fa-file-code"></i>
@@ -802,9 +804,9 @@
                     <span class="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-2"><i class="fa-solid fa-file-csv"></i></span>
                     <span class="block text-sm font-bold">CSV Import</span><span class="block text-[10px] text-slate-500 mt-0.5">Import bank statement</span>
                 </button>
-                <button onclick="closeMobileTools(); openGitHubSettings();" class="min-h-[76px] p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left">
-                    <span class="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center mb-2"><i class="fa-brands fa-github"></i></span>
-                    <span class="block text-sm font-bold">GitHub</span><span class="block text-[10px] text-slate-500 mt-0.5">Sync configuration</span>
+                <button onclick="closeMobileTools(); openAccountModal();" class="min-h-[76px] p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left">
+                    <span class="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center mb-2"><i class="fa-solid fa-user"></i></span>
+                    <span class="block text-sm font-bold">Account</span><span class="block text-[10px] text-slate-500 mt-0.5">Profile & cloud data</span>
                 </button>
                 <button onclick="closeMobileTools(); exportJSON();" class="min-h-[76px] p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-left">
                     <span class="w-9 h-9 rounded-xl bg-cyan-100 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-2"><i class="fa-solid fa-file-code"></i></span>
@@ -819,109 +821,171 @@
         </div>
     </div>
 
-    <!-- Modal: GitHub Sync Settings -->
-    <div id="modal-github" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-xl w-full p-6 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
-                <div>
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2"><i class="fa-brands fa-github"></i> GitHub Sync Settings</h3>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Connect PaySmart to one JSON file in a GitHub repository.</p>
+    <!-- Authentication Screen -->
+    <div id="auth-screen" class="fixed inset-0 z-[100] hidden bg-slate-50 dark:bg-slate-950 overflow-y-auto">
+        <div class="min-h-full flex items-center justify-center p-4 sm:p-6">
+            <div class="w-full max-w-md">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-xl shadow-emerald-500/20 mb-4">
+                        <i class="fa-solid fa-wallet text-3xl"></i>
+                    </div>
+                    <h1 class="text-3xl font-black tracking-tight">PaySmart</h1>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Your private payday-cycle financial planner.</p>
                 </div>
-                <button type="button" onclick="closeGitHubSettings()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
+
+                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl p-5 sm:p-6">
+                    <div id="auth-config-warning" class="hidden mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-xs text-amber-800 dark:text-amber-300">
+                        PaySmart has not been connected to Supabase yet. Complete the setup values in the HTML first.
+                    </div>
+
+                    <div class="grid grid-cols-2 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 mb-5">
+                        <button id="auth-tab-login" onclick="switchAuthMode('login')" class="py-2.5 rounded-lg text-sm font-bold bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400">Log in</button>
+                        <button id="auth-tab-register" onclick="switchAuthMode('register')" class="py-2.5 rounded-lg text-sm font-bold text-slate-500 dark:text-slate-400">Create account</button>
+                    </div>
+
+                    <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Email</label>
+                            <input id="login-email" type="email" autocomplete="email" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="you@example.com">
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-semibold uppercase text-slate-500">Password</label>
+                                <button type="button" onclick="handleForgotPassword()" class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">Forgot password?</button>
+                            </div>
+                            <input id="login-password" type="password" autocomplete="current-password" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="••••••••">
+                        </div>
+                        <button id="login-submit" type="submit" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-600/15 transition-all">Log in</button>
+                    </form>
+
+                    <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Name</label>
+                            <input id="register-name" type="text" autocomplete="name" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Your name">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Email</label>
+                            <input id="register-email" type="email" autocomplete="email" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="you@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Password</label>
+                            <input id="register-password" type="password" autocomplete="new-password" minlength="8" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="At least 8 characters">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Confirm password</label>
+                            <input id="register-password-confirm" type="password" autocomplete="new-password" minlength="8" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Repeat password">
+                        </div>
+                        <button id="register-submit" type="submit" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-600/15 transition-all">Create account</button>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 text-center">If email confirmation is enabled, PaySmart will ask you to verify your email before your first login.</p>
+                    </form>
+
+                    <form id="recovery-form" onsubmit="handleSetNewPassword(event)" class="space-y-4 hidden">
+                        <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 text-xs text-emerald-800 dark:text-emerald-300">
+                            Enter your new PaySmart password.
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">New password</label>
+                            <input id="recovery-password" type="password" minlength="8" required autocomplete="new-password" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                        <button type="submit" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold">Save new password</button>
+                    </form>
+
+                    <p id="auth-message" class="hidden mt-4 text-xs rounded-xl p-3"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Account -->
+    <div id="modal-account" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-4">
+            <div class="flex justify-between items-start border-b border-slate-100 dark:border-slate-700 pb-3">
+                <div>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2"><i class="fa-solid fa-user-circle"></i> Account</h3>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Your PaySmart profile and private cloud data.</p>
+                </div>
+                <button type="button" onclick="closeAccountModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <form id="github-settings-form" onsubmit="handleSaveGitHubSettings(event)" class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Repository Owner</label>
-                        <input type="text" id="github-owner" required placeholder="your-github-username" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Repository</label>
-                        <input type="text" id="github-repo" required placeholder="PaySmart" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-xl bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg"><i class="fa-solid fa-user"></i></div>
+                    <div class="min-w-0">
+                        <div id="account-name" class="font-bold truncate">PaySmart User</div>
+                        <div id="account-email" class="text-xs text-slate-500 dark:text-slate-400 truncate">-</div>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">JSON File Path</label>
-                        <input type="text" id="github-path" required value="PaySmart_Data.json" placeholder="data/PaySmart_Data.json" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Branch</label>
-                        <input type="text" id="github-branch" required value="main" placeholder="main" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                    </div>
+                <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                    <span class="text-[10px] uppercase font-semibold text-slate-400">Private data file</span>
+                    <div id="account-file-path" class="text-[11px] font-mono text-slate-600 dark:text-slate-300 break-all mt-1">PaySmart_JSON/&lt;user-id&gt;.json</div>
                 </div>
+            </div>
 
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Fine-grained Personal Access Token</label>
-                    <input type="password" id="github-token" required autocomplete="off" placeholder="github_pat_..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Use a token restricted to this repository with <strong>Contents: Read and write</strong>. Never commit the token into this HTML or your repository.</p>
-                </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button type="button" onclick="reloadFromCloud()" class="px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 font-bold text-xs"><i class="fa-solid fa-cloud-arrow-down mr-2"></i>Reload cloud data</button>
+                <button type="button" onclick="exportJSON()" class="px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 text-blue-700 dark:text-blue-400 font-bold text-xs"><i class="fa-solid fa-file-export mr-2"></i>Export JSON</button>
+            </div>
 
-                <label class="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 cursor-pointer">
-                    <input type="checkbox" id="github-remember-token" class="mt-0.5 rounded text-emerald-600">
-                    <span class="text-[11px] text-amber-800 dark:text-amber-300"><strong>Remember token on this device.</strong> Leave this off for better security. When off, the token lasts only for the current browser session.</span>
-                </label>
-
-                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-300">
-                    <strong>Privacy:</strong> Your JSON contains financial data. Use a <strong>private GitHub repository</strong> unless you intentionally want that data to be public.
-                </div>
-
-                <div class="flex flex-col sm:flex-row gap-2 pt-1">
-                    <button type="button" onclick="disconnectGitHub()" class="sm:w-auto px-4 py-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl hover:bg-rose-100 dark:hover:bg-rose-950/70 transition-all">Disconnect</button>
-                    <div class="flex-1"></div>
-                    <button type="button" onclick="closeGitHubSettings()" class="px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-200 transition-all">Cancel</button>
-                    <button type="submit" class="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all">Save & Load from GitHub</button>
-                </div>
-            </form>
+            <button type="button" onclick="handleLogout()" class="w-full px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-xs"><i class="fa-solid fa-right-from-bracket mr-2"></i>Log out</button>
         </div>
     </div>
 
     <script>
-        // --- GITHUB SYNC CONFIGURATION ---
-        const GITHUB_CONFIG_KEY = 'paysmart_github_config_v1';
-        const GITHUB_TOKEN_SESSION_KEY = 'paysmart_github_token_session_v1';
-        const GITHUB_TOKEN_LOCAL_KEY = 'paysmart_github_token_local_v1';
-        const GITHUB_API_VERSION = '2026-03-10';
-        let githubLastKnownSha = null;
-        let githubSyncInProgress = false;
-        let githubSaveTimer = null;
-        let githubPendingSave = false;
-        let githubConflict = false;
+        // --- PAYSMART MULTI-USER CONFIGURATION ---
+        // Paste these two values from Supabase > Project Settings > API.
+        // The publishable key is designed to be used in browser applications.
+        const SUPABASE_URL = 'https://mhdflrchemjbijnqvhsk.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_m7jvqAOp0t8MmnDk2mcQIg_F104JlmW';
+        const PAYSMART_FUNCTION_NAME = 'paysmart-data';
+        const PAYSMART_DATA_ROOT = 'PaySmart_JSON';
 
-        // Initial Savings Pockets Defaults
+        let supabaseClient = null;
+        let currentSession = null;
+        let currentUser = null;
+        let cloudLastKnownSha = null;
+        let cloudSyncInProgress = false;
+        let cloudPendingSave = false;
+        let cloudSaveTimer = null;
+        let cloudConflict = false;
+        let appInitializedForUser = null;
+
+        // Generic defaults for new PaySmart users.
         const DEFAULT_POCKETS = [
-            { id: 'personal', name: 'Personal Savings Account', amount: 500, icon: 'fa-user-shield', desc: 'Main personal emergency & wealth account.' },
-            { id: 'wife', name: 'Shared Savings (Wife)', amount: 400, icon: 'fa-heart', desc: 'Joint household long-term savings.' },
-            { id: 'car', name: 'Car Pocket', amount: 50, icon: 'fa-car', desc: 'Car maintenance, fuel & insurance fund.' },
-            { id: 'cats', name: 'Cats Pocket', amount: 25, icon: 'fa-cat', desc: 'Cat food, vet checkups & care.' },
-            { id: 'tennis', name: 'Tennis Pocket', amount: 20, icon: 'fa-table-tennis-paddle-ball', desc: 'Tennis court rentals & gear.' }
+            { id: 'general', name: 'General Savings', amount: 0, icon: 'fa-piggy-bank', desc: 'General monthly savings target.' },
+            { id: 'emergency', name: 'Emergency Fund', amount: 0, icon: 'fa-shield-heart', desc: 'Emergency reserve target.' }
         ];
 
-        // Default Recurring Expenses
-        const DEFAULT_RECURRING = [
-            { id: 'rec-1', name: 'Home Fiber Internet', amount: 45.00, category: 'Utilities & Bills', freq: 'Monthly', startDate: '2026-01-01', endDate: null, active: true },
-            { id: 'rec-2', name: 'Streaming Subscription', amount: 14.99, category: 'Subscriptions', freq: 'Monthly', startDate: '2026-01-01', endDate: null, active: true }
-        ];
+        const DEFAULT_RECURRING = [];
 
-        let state = {
-            pockets: DEFAULT_POCKETS,
-            recurring: DEFAULT_RECURRING,
-            incomes: [],
-            expenses: [],
-            selectedCycleIndex: 0
-        };
+        function createEmptyState() {
+            return {
+                pockets: structuredClone(DEFAULT_POCKETS),
+                recurring: structuredClone(DEFAULT_RECURRING),
+                incomes: [],
+                expenses: [],
+                selectedCycleIndex: 0
+            };
+        }
+
+        let state = createEmptyState();
 
         let activePayPeriods = [];
         let allocationChartInstance = null;
         let weeklyBarChartInstance = null;
         let parsedImportData = [];
 
+        function isSupabaseConfigured() {
+            return SUPABASE_URL.startsWith('https://') &&
+                !SUPABASE_URL.includes('PASTE_') &&
+                SUPABASE_PUBLISHABLE_KEY &&
+                !SUPABASE_PUBLISHABLE_KEY.includes('PASTE_');
+        }
+
+        function currentUserStorageKey() {
+            return currentUser ? `paysmart_data_v6_${currentUser.id}` : null;
+        }
+
         window.onload = async function() {
-            const hadLocalData = loadFromLocalStorage();
             activePayPeriods = generatePayPeriods(6);
 
             const todayStr = new Date().toISOString().substring(0, 10);
@@ -930,19 +994,203 @@
 
             initCycleSelector();
             renderAll();
+            updateSyncBadge('auth', 'Sign in');
 
-            let loadedFromGitHub = false;
-            if (isGitHubConfigured() && getGitHubToken()) {
-                loadedFromGitHub = await loadFromGitHub({ silent: true });
-            } else if (isGitHubConfigured(false)) {
-                updateSyncBadge('auth', 'GitHub login');
+            if (!isSupabaseConfigured()) {
+                showAuthScreen();
+                document.getElementById('auth-config-warning')?.classList.remove('hidden');
+                return;
             }
 
-            if (!loadedFromGitHub && !hadLocalData && state.incomes.length === 0 && state.expenses.length === 0) {
-                seedDemoData({ sync: false });
-                renderAll();
-            }
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+                auth: {
+                    persistSession: true,
+                    autoRefreshToken: true,
+                    detectSessionInUrl: true
+                }
+            });
+
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                setTimeout(() => handleAuthState(event, session), 0);
+            });
+
+            const { data, error } = await supabaseClient.auth.getSession();
+            if (error) console.error('Supabase session error:', error);
+            await handleAuthState('INITIAL_SESSION', data?.session || null);
         };
+
+        async function handleAuthState(event, session) {
+            if (event === 'PASSWORD_RECOVERY') {
+                showAuthScreen();
+                switchAuthMode('recovery');
+                return;
+            }
+
+            if (!session?.user) {
+                currentSession = null;
+                currentUser = null;
+                appInitializedForUser = null;
+                cloudLastKnownSha = null;
+                cloudConflict = false;
+                updateSyncBadge('auth', 'Sign in');
+                showAuthScreen();
+                return;
+            }
+
+            currentSession = session;
+            currentUser = session.user;
+            hideAuthScreen();
+            updateAccountUI();
+
+            if (appInitializedForUser === currentUser.id) return;
+            appInitializedForUser = currentUser.id;
+
+            state = createEmptyState();
+            const hadLocalData = loadFromLocalStorage();
+            initCycleSelector();
+            renderAll();
+
+            const loaded = await loadFromCloud({ silent: true });
+            if (!loaded && !hadLocalData) {
+                state = createEmptyState();
+                state.selectedCycleIndex = getCurrentPeriodIndex();
+                saveToLocalStorage({ sync: false });
+                initCycleSelector();
+                renderAll();
+                await saveToCloud({ silent: true, force: true });
+            }
+        }
+
+        function showAuthScreen() {
+            document.getElementById('auth-screen')?.classList.remove('hidden');
+        }
+
+        function hideAuthScreen() {
+            document.getElementById('auth-screen')?.classList.add('hidden');
+            clearAuthMessage();
+        }
+
+        function switchAuthMode(mode) {
+            const login = document.getElementById('login-form');
+            const register = document.getElementById('register-form');
+            const recovery = document.getElementById('recovery-form');
+            const loginTab = document.getElementById('auth-tab-login');
+            const registerTab = document.getElementById('auth-tab-register');
+            login.classList.toggle('hidden', mode !== 'login');
+            register.classList.toggle('hidden', mode !== 'register');
+            recovery.classList.toggle('hidden', mode !== 'recovery');
+            loginTab.parentElement.classList.toggle('hidden', mode === 'recovery');
+            if (mode !== 'recovery') {
+                loginTab.className = `py-2.5 rounded-lg text-sm font-bold ${mode === 'login' ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`;
+                registerTab.className = `py-2.5 rounded-lg text-sm font-bold ${mode === 'register' ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`;
+            }
+            clearAuthMessage();
+        }
+
+        function showAuthMessage(message, type = 'info') {
+            const el = document.getElementById('auth-message');
+            if (!el) return;
+            el.textContent = message;
+            el.classList.remove('hidden');
+            const base = 'mt-4 text-xs rounded-xl p-3 ';
+            if (type === 'error') el.className = base + 'bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/50';
+            else if (type === 'success') el.className = base + 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50';
+            else el.className = base + 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+        }
+
+        function clearAuthMessage() {
+            const el = document.getElementById('auth-message');
+            if (el) el.classList.add('hidden');
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            if (!supabaseClient) return showAuthMessage('Supabase is not configured yet.', 'error');
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const btn = document.getElementById('login-submit');
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            btn.disabled = false;
+            btn.textContent = 'Log in';
+            if (error) showAuthMessage(error.message, 'error');
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            if (!supabaseClient) return showAuthMessage('Supabase is not configured yet.', 'error');
+            const name = document.getElementById('register-name').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-password-confirm').value;
+            if (password !== confirmPassword) return showAuthMessage('Passwords do not match.', 'error');
+
+            const btn = document.getElementById('register-submit');
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+            const { data, error } = await supabaseClient.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: { display_name: name },
+                    emailRedirectTo: window.location.origin + window.location.pathname
+                }
+            });
+            btn.disabled = false;
+            btn.textContent = 'Create account';
+            if (error) return showAuthMessage(error.message, 'error');
+            if (!data?.session) {
+                switchAuthMode('login');
+                document.getElementById('login-email').value = email;
+                showAuthMessage('Account created. Check your email and confirm the address, then log in.', 'success');
+            }
+        }
+
+        async function handleForgotPassword() {
+            if (!supabaseClient) return showAuthMessage('Supabase is not configured yet.', 'error');
+            const email = document.getElementById('login-email').value.trim();
+            if (!email) return showAuthMessage('Enter your email address first.', 'error');
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + window.location.pathname
+            });
+            if (error) showAuthMessage(error.message, 'error');
+            else showAuthMessage('Password-reset email sent. Check your inbox.', 'success');
+        }
+
+        async function handleSetNewPassword(event) {
+            event.preventDefault();
+            const password = document.getElementById('recovery-password').value;
+            const { error } = await supabaseClient.auth.updateUser({ password });
+            if (error) return showAuthMessage(error.message, 'error');
+            showAuthMessage('Password updated successfully.', 'success');
+            setTimeout(() => hideAuthScreen(), 800);
+        }
+
+        async function handleLogout() {
+            closeAccountModal();
+            if (supabaseClient) await supabaseClient.auth.signOut();
+            state = createEmptyState();
+            initCycleSelector();
+            renderAll();
+        }
+
+        function openAccountModal() {
+            updateAccountUI();
+            document.getElementById('modal-account')?.classList.remove('hidden');
+        }
+
+        function closeAccountModal() {
+            document.getElementById('modal-account')?.classList.add('hidden');
+        }
+
+        function updateAccountUI() {
+            if (!currentUser) return;
+            const name = currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'PaySmart User';
+            document.getElementById('account-name').textContent = name;
+            document.getElementById('account-email').textContent = currentUser.email || '';
+            document.getElementById('account-file-path').textContent = `${PAYSMART_DATA_ROOT}/${currentUser.id}.json`;
+        }
 
         // --- NEW: EXPORT JSON FUNCTIONALITY ---
         function exportJSON() {
@@ -959,301 +1207,163 @@
             showToast("Exported state as JSON!");
         }
 
-        // --- GITHUB SYNC ENGINE ---
+        // --- SECURE MULTI-USER CLOUD SYNC ENGINE ---
         function updateSyncBadge(status, message) {
-            const indicator = document.getElementById("sync-indicator");
-            const text = document.getElementById("sync-status-text");
+            const indicator = document.getElementById('sync-indicator');
+            const text = document.getElementById('sync-status-text');
             if (!indicator || !text) return;
 
-            if (status === "syncing") {
-                indicator.className = "w-2 h-2 rounded-full bg-amber-500 animate-pulse";
-                text.innerText = message || "Syncing...";
-            } else if (status === "synced") {
-                indicator.className = "w-2 h-2 rounded-full bg-emerald-500";
-                text.innerText = message || "GitHub Synced";
-            } else if (status === "auth") {
-                indicator.className = "w-2 h-2 rounded-full bg-amber-500";
-                text.innerText = message || "GitHub Login";
-            } else if (status === "conflict") {
-                indicator.className = "w-2 h-2 rounded-full bg-rose-500";
-                text.innerText = message || "Sync Conflict";
-            } else if (status === "error") {
-                indicator.className = "w-2 h-2 rounded-full bg-rose-500";
-                text.innerText = message || "Sync Error";
+            if (status === 'syncing') {
+                indicator.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
+                text.innerText = message || 'Syncing...';
+            } else if (status === 'synced') {
+                indicator.className = 'w-2 h-2 rounded-full bg-emerald-500';
+                text.innerText = message || 'Synced';
+            } else if (status === 'auth') {
+                indicator.className = 'w-2 h-2 rounded-full bg-amber-500';
+                text.innerText = message || 'Sign in';
+            } else if (status === 'conflict') {
+                indicator.className = 'w-2 h-2 rounded-full bg-rose-500';
+                text.innerText = message || 'Conflict';
+            } else if (status === 'error') {
+                indicator.className = 'w-2 h-2 rounded-full bg-rose-500';
+                text.innerText = message || 'Sync error';
             } else {
-                indicator.className = "w-2 h-2 rounded-full bg-slate-400";
-                text.innerText = message || "Local";
+                indicator.className = 'w-2 h-2 rounded-full bg-slate-400';
+                text.innerText = message || 'Local';
             }
-        }
-
-        function getGitHubConfig() {
-            try {
-                return JSON.parse(localStorage.getItem(GITHUB_CONFIG_KEY) || 'null');
-            } catch (e) {
-                console.error('GitHub config parse error', e);
-                return null;
-            }
-        }
-
-        function getGitHubToken() {
-            return sessionStorage.getItem(GITHUB_TOKEN_SESSION_KEY) || localStorage.getItem(GITHUB_TOKEN_LOCAL_KEY) || '';
-        }
-
-        function isGitHubConfigured(requireToken = true) {
-            const cfg = getGitHubConfig();
-            const hasConfig = !!(cfg && cfg.owner && cfg.repo && cfg.path && cfg.branch);
-            return requireToken ? (hasConfig && !!getGitHubToken()) : hasConfig;
-        }
-
-        function githubFileUrl(cfg) {
-            const path = cfg.path.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-            return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${path}`;
-        }
-
-        function githubHeaders() {
-            const token = getGitHubToken();
-            const headers = {
-                'Accept': 'application/vnd.github+json',
-                'X-GitHub-Api-Version': GITHUB_API_VERSION
-            };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-            return headers;
-        }
-
-        function utf8ToBase64(value) {
-            const bytes = new TextEncoder().encode(value);
-            let binary = '';
-            const chunkSize = 0x8000;
-            for (let i = 0; i < bytes.length; i += chunkSize) {
-                binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
-            }
-            return btoa(binary);
-        }
-
-        function base64ToUtf8(value) {
-            const binary = atob((value || '').replace(/\s/g, ''));
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-            return new TextDecoder().decode(bytes);
         }
 
         function normalizeLoadedState(loadedState) {
-            if (!loadedState || typeof loadedState !== 'object') throw new Error('GitHub JSON is not a valid PaySmart state object.');
-            if (!Array.isArray(loadedState.incomes)) loadedState.incomes = [];
+            if (!loadedState || typeof loadedState !== 'object') throw new Error('The cloud JSON is not a valid PaySmart state object.');
             if (!Array.isArray(loadedState.expenses)) loadedState.expenses = [];
-            if (!Array.isArray(loadedState.pockets) || loadedState.pockets.length === 0) loadedState.pockets = structuredClone(DEFAULT_POCKETS);
+            if (!Array.isArray(loadedState.incomes)) loadedState.incomes = [];
+            if (!Array.isArray(loadedState.pockets)) loadedState.pockets = structuredClone(DEFAULT_POCKETS);
             if (!Array.isArray(loadedState.recurring)) loadedState.recurring = structuredClone(DEFAULT_RECURRING);
             if (!Number.isInteger(loadedState.selectedCycleIndex)) loadedState.selectedCycleIndex = 0;
-
-            loadedState.pockets.forEach(p => {
-                if (p.id === 'tennis') p.icon = 'fa-table-tennis-paddle-ball';
-            });
             return loadedState;
         }
 
-        async function getGitHubFile() {
-            const cfg = getGitHubConfig();
-            if (!cfg) throw new Error('GitHub sync is not configured.');
-
-            const response = await fetch(`${githubFileUrl(cfg)}?ref=${encodeURIComponent(cfg.branch)}`, {
-                method: 'GET',
-                headers: githubHeaders(),
+        async function invokePaySmartBackend(payload) {
+            if (!currentSession?.access_token) throw new Error('Please log in again.');
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/${PAYSMART_FUNCTION_NAME}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentSession.access_token}`,
+                    'apikey': SUPABASE_PUBLISHABLE_KEY
+                },
+                body: JSON.stringify(payload),
                 cache: 'no-store'
             });
 
-            if (response.status === 404) return null;
+            let result = null;
+            try { result = await response.json(); } catch (_) {}
             if (!response.ok) {
-                let detail = '';
-                try { detail = (await response.json()).message || ''; } catch (_) {}
-                throw new Error(`GitHub read failed (${response.status})${detail ? ': ' + detail : ''}`);
+                const err = new Error(result?.error || result?.message || `Cloud request failed (${response.status}).`);
+                err.status = response.status;
+                err.details = result;
+                throw err;
             }
-            return await response.json();
+            return result;
         }
 
-        async function loadFromGitHub({ silent = false } = {}) {
-            if (!isGitHubConfigured()) {
-                if (isGitHubConfigured(false)) updateSyncBadge('auth', 'GitHub login');
-                else updateSyncBadge('local');
+        async function loadFromCloud({ silent = false } = {}) {
+            if (!currentUser || !currentSession) {
+                updateSyncBadge('auth', 'Sign in');
                 return false;
             }
 
             updateSyncBadge('syncing', 'Loading...');
             try {
-                const remote = await getGitHubFile();
-                if (!remote) {
-                    githubLastKnownSha = null;
-                    githubConflict = false;
-                    updateSyncBadge('synced', 'GitHub Ready');
-                    if (!silent) showToast('GitHub JSON file was not found at the configured path.');
+                const result = await invokePaySmartBackend({ action: 'load' });
+                if (!result?.exists) {
+                    cloudLastKnownSha = null;
+                    cloudConflict = false;
+                    updateSyncBadge('synced', 'Cloud ready');
                     return false;
                 }
 
-                const remoteState = normalizeLoadedState(JSON.parse(base64ToUtf8(remote.content)));
+                const remoteState = normalizeLoadedState(result.data?.data || result.data);
                 state = remoteState;
-                githubLastKnownSha = remote.sha;
-                githubConflict = false;
-                localStorage.setItem('savesmart_data_v5', JSON.stringify(state));
+                cloudLastKnownSha = result.sha || null;
+                cloudConflict = false;
+                saveToLocalStorage({ sync: false });
                 initCycleSelector();
                 renderAll();
                 updateSyncBadge('synced');
-                if (!silent) showToast('Loaded latest data from GitHub!');
+                if (!silent) showToast('Loaded your latest PaySmart data.');
                 return true;
             } catch (err) {
-                console.error('GitHub pull error:', err);
+                console.error('Cloud load error:', err);
                 updateSyncBadge('error');
-                if (!silent) showToast(err.message || 'Could not load data from GitHub.');
+                if (!silent) showToast(err.message || 'Could not load your cloud data.');
                 return false;
             }
         }
 
-        async function saveToGitHub({ silent = true, force = false } = {}) {
-            if (!isGitHubConfigured()) {
-                if (isGitHubConfigured(false)) updateSyncBadge('auth', 'GitHub login');
-                return false;
-            }
-            if (githubSyncInProgress) {
-                githubPendingSave = true;
+        async function saveToCloud({ silent = true, force = false } = {}) {
+            if (!currentUser || !currentSession) return false;
+            if (cloudSyncInProgress) {
+                cloudPendingSave = true;
                 return false;
             }
 
-            githubSyncInProgress = true;
+            cloudSyncInProgress = true;
             updateSyncBadge('syncing', 'Saving...');
             try {
-                const cfg = getGitHubConfig();
-                const remote = await getGitHubFile();
-
-                if (!force && githubLastKnownSha && (!remote || remote.sha !== githubLastKnownSha)) {
-                    githubConflict = true;
-                    updateSyncBadge('conflict');
-                    showToast('GitHub has a newer version. Open GitHub settings and load it before saving again.');
-                    return false;
-                }
-
-                const body = {
-                    message: `PaySmart data sync ${new Date().toISOString()}`,
-                    content: utf8ToBase64(JSON.stringify(state, null, 2)),
-                    branch: cfg.branch
-                };
-                if (remote?.sha) body.sha = remote.sha;
-
-                const response = await fetch(githubFileUrl(cfg), {
-                    method: 'PUT',
-                    headers: { ...githubHeaders(), 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
+                const result = await invokePaySmartBackend({
+                    action: 'save',
+                    data: state,
+                    expectedSha: force ? null : cloudLastKnownSha,
+                    force
                 });
-
-                if (!response.ok) {
-                    let detail = '';
-                    try { detail = (await response.json()).message || ''; } catch (_) {}
-                    if (response.status === 409 || response.status === 422) {
-                        githubConflict = true;
-                        updateSyncBadge('conflict');
-                        throw new Error('GitHub file changed before this save completed. Load the latest GitHub version and try again.');
-                    }
-                    throw new Error(`GitHub save failed (${response.status})${detail ? ': ' + detail : ''}`);
-                }
-
-                const result = await response.json();
-                githubLastKnownSha = result?.content?.sha || null;
-                githubConflict = false;
+                cloudLastKnownSha = result.sha || null;
+                cloudConflict = false;
                 updateSyncBadge('synced');
-                if (!silent) showToast('Saved current data to GitHub!');
+                if (!silent) showToast('Your PaySmart data is synced.');
                 return true;
             } catch (err) {
-                console.error('GitHub save error:', err);
-                if (!githubConflict) updateSyncBadge('error');
-                if (!silent || githubConflict) showToast(err.message || 'Could not save data to GitHub.');
+                console.error('Cloud save error:', err);
+                if (err.status === 409) {
+                    cloudConflict = true;
+                    updateSyncBadge('conflict');
+                    showToast('A newer cloud version exists. Reload cloud data before saving again.');
+                } else {
+                    updateSyncBadge('error');
+                    if (!silent) showToast(err.message || 'Could not save your cloud data.');
+                }
                 return false;
             } finally {
-                githubSyncInProgress = false;
-                if (githubPendingSave && !githubConflict) {
-                    githubPendingSave = false;
-                    clearTimeout(githubSaveTimer);
-                    githubSaveTimer = setTimeout(() => saveToGitHub({ silent: true }), 150);
+                cloudSyncInProgress = false;
+                if (cloudPendingSave && !cloudConflict) {
+                    cloudPendingSave = false;
+                    clearTimeout(cloudSaveTimer);
+                    cloudSaveTimer = setTimeout(() => saveToCloud({ silent: true }), 200);
                 }
             }
         }
 
-        function queueGitHubSave() {
-            if (!isGitHubConfigured() || githubConflict) return;
-            clearTimeout(githubSaveTimer);
-            githubSaveTimer = setTimeout(() => saveToGitHub({ silent: true }), 700);
+        function queueCloudSave() {
+            if (!currentUser || !currentSession || cloudConflict) return;
+            clearTimeout(cloudSaveTimer);
+            cloudSaveTimer = setTimeout(() => saveToCloud({ silent: true }), 700);
         }
 
         async function manualSync() {
-            if (!isGitHubConfigured()) {
-                openGitHubSettings();
-                showToast('Configure GitHub sync first.');
+            if (!currentUser || !currentSession) {
+                showAuthScreen();
+                showToast('Log in to sync your data.');
                 return;
             }
-            await saveToGitHub({ silent: false });
+            await saveToCloud({ silent: false });
         }
 
-        function openGitHubSettings() {
-            const cfg = getGitHubConfig() || { owner: '', repo: '', path: 'PaySmart_Data.json', branch: 'main' };
-            document.getElementById('github-owner').value = cfg.owner || '';
-            document.getElementById('github-repo').value = cfg.repo || '';
-            document.getElementById('github-path').value = cfg.path || 'PaySmart_Data.json';
-            document.getElementById('github-branch').value = cfg.branch || 'main';
-            document.getElementById('github-token').value = getGitHubToken();
-            document.getElementById('github-remember-token').checked = !!localStorage.getItem(GITHUB_TOKEN_LOCAL_KEY);
-            document.getElementById('modal-github').classList.remove('hidden');
-        }
-
-        function closeGitHubSettings() {
-            document.getElementById('modal-github')?.classList.add('hidden');
-        }
-
-        async function handleSaveGitHubSettings(event) {
-            event.preventDefault();
-            const cfg = {
-                owner: document.getElementById('github-owner').value.trim(),
-                repo: document.getElementById('github-repo').value.trim(),
-                path: document.getElementById('github-path').value.trim().replace(/^\/+/, ''),
-                branch: document.getElementById('github-branch').value.trim() || 'main'
-            };
-            const token = document.getElementById('github-token').value.trim();
-            const remember = document.getElementById('github-remember-token').checked;
-
-            if (!cfg.owner || !cfg.repo || !cfg.path || !token) {
-                showToast('Complete all GitHub settings first.');
-                return;
-            }
-
-            localStorage.setItem(GITHUB_CONFIG_KEY, JSON.stringify(cfg));
-            sessionStorage.setItem(GITHUB_TOKEN_SESSION_KEY, token);
-            if (remember) localStorage.setItem(GITHUB_TOKEN_LOCAL_KEY, token);
-            else localStorage.removeItem(GITHUB_TOKEN_LOCAL_KEY);
-
-            githubLastKnownSha = null;
-            githubPendingSave = false;
-            githubConflict = false;
-            closeGitHubSettings();
-
-            const loaded = await loadFromGitHub({ silent: false });
-            if (!loaded) {
-                try {
-                    const remote = await getGitHubFile();
-                    if (!remote && confirm('The configured JSON file does not exist on GitHub. Create it now using the current PaySmart data?')) {
-                        await saveToGitHub({ silent: false, force: true });
-                    }
-                } catch (_) {
-                    // loadFromGitHub already displayed the relevant error.
-                }
-            }
-        }
-
-        function disconnectGitHub() {
-            if (!confirm('Disconnect GitHub sync on this browser? Your GitHub JSON file will not be deleted.')) return;
-            localStorage.removeItem(GITHUB_CONFIG_KEY);
-            localStorage.removeItem(GITHUB_TOKEN_LOCAL_KEY);
-            sessionStorage.removeItem(GITHUB_TOKEN_SESSION_KEY);
-            githubLastKnownSha = null;
-            githubPendingSave = false;
-            githubConflict = false;
-            closeGitHubSettings();
-            updateSyncBadge('local');
-            showToast('GitHub sync disconnected. Local data was kept.');
+        async function reloadFromCloud() {
+            closeAccountModal();
+            if (!currentUser) return;
+            const ok = await loadFromCloud({ silent: false });
+            if (ok) cloudConflict = false;
         }
 
         // --- NAVIGATION & UI HELPERS ---
@@ -1527,25 +1637,20 @@
         }
 
         function saveToLocalStorage({ sync = true } = {}) {
-            localStorage.setItem('savesmart_data_v5', JSON.stringify(state));
-            if (sync) queueGitHubSave();
+            const key = currentUserStorageKey();
+            if (key) localStorage.setItem(key, JSON.stringify(state));
+            if (sync) queueCloudSave();
         }
 
         function loadFromLocalStorage() {
-            const data = localStorage.getItem('savesmart_data_v5');
+            const key = currentUserStorageKey();
+            if (!key) return false;
+            const data = localStorage.getItem(key);
             if (data) {
                 try {
-                    state = JSON.parse(data);
-                    if (!state.pockets || state.pockets.length === 0) state.pockets = DEFAULT_POCKETS;
-                    if (!state.recurring) state.recurring = DEFAULT_RECURRING;
-
-                    state.pockets.forEach(p => {
-                        if (p.id === 'tennis' && p.icon !== 'fa-table-tennis-paddle-ball') {
-                            p.icon = 'fa-table-tennis-paddle-ball';
-                        }
-                    });
+                    state = normalizeLoadedState(JSON.parse(data));
                 } catch(e) {
-                    console.error("Storage parse error", e);
+                    console.error('Storage parse error', e);
                     return false;
                 }
                 return true;
@@ -1554,17 +1659,15 @@
         }
 
         function resetData() {
-            if (confirm("Reset application data to original demo rules?")) {
-                localStorage.removeItem('savesmart_data_v5');
-                state.incomes = [];
-                state.expenses = [];
-                state.pockets = DEFAULT_POCKETS;
-                state.recurring = DEFAULT_RECURRING;
+            if (confirm('Reset your PaySmart account to empty default data? This will also sync the reset to your private cloud file.')) {
+                const key = currentUserStorageKey();
+                if (key) localStorage.removeItem(key);
+                state = createEmptyState();
                 state.selectedCycleIndex = getCurrentPeriodIndex();
-                seedDemoData();
+                saveToLocalStorage();
                 initCycleSelector();
                 renderAll();
-                showToast("Reset to initial defaults.");
+                showToast('PaySmart data reset to defaults.');
             }
         }
 
