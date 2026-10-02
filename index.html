@@ -2151,9 +2151,10 @@
                 nextPayday = getAdjustedPayday(targetYear, targetMonth);
             }
 
-            const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+            const paydayWeekday = nextPayday.toLocaleDateString('en-GB', { weekday: 'short' });
+            const paydayDate = `${String(nextPayday.getDate()).padStart(2, '0')}.${String(nextPayday.getMonth() + 1).padStart(2, '0')}.${nextPayday.getFullYear()}`;
             const displayEl = document.getElementById('payday-date-display');
-            if (displayEl) displayEl.innerText = nextPayday.toLocaleDateString('en-US', options);
+            if (displayEl) displayEl.innerText = `${paydayWeekday}, ${paydayDate}`;
 
             const countryName = getCountryName();
             const countryBadge = document.getElementById('payday-country-badge');
